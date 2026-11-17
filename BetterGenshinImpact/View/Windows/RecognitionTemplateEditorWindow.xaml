@@ -225,7 +225,7 @@
                                    Text="{i18n:T Recognition.json 写入输出文件夹；图片写入 1920x1080 子目录}" />
                         <TextBlock Margin="0,2,0,0"
                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                   Text="{Binding OutputImageDisplayPath}"
+                                   Text="{i18n:TValue OutputImageDisplayPath}"
                                    TextTrimming="CharacterEllipsis"
                                    ToolTip="{Binding OutputImagePath}" />
 
@@ -260,7 +260,7 @@
                             <TextBlock Grid.Row="1" Grid.Column="0" Margin="0,0,8,8" VerticalAlignment="Center" Text="{i18n:T 对象 Key}" />
                             <TextBox Grid.Row="1" Grid.Column="1" Margin="0,0,0,8" Text="{Binding ObjectName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" ToolTip="{i18n:T 默认根据 PNG 文件名生成大驼峰名称，手动修改后不再自动覆盖}" />
                             <TextBlock Grid.Row="2" Grid.Column="0" Margin="0,0,8,0" VerticalAlignment="Center" Text="{i18n:T 参考画布}" />
-                            <TextBlock Grid.Row="2" Grid.Column="1" VerticalAlignment="Center" Text="{Binding ReferenceSizeText}" />
+                            <TextBlock Grid.Row="2" Grid.Column="1" VerticalAlignment="Center" Text="{i18n:TValue ReferenceSizeText}" />
                         </Grid>
 
                         <Grid Margin="0,12,0,0">

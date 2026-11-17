@@ -4,5 +4,5 @@ namespace BetterGenshinImpact.ViewModel.Pages.OneDragon;
 
 public partial class LeyLineBlossomViewModel : OneDragonBaseViewModel
 {
-    public override string Title { get; } = "刷地脉花";
+    public override string Title { get; } = "Auto Ley Line Outcrop";
 }

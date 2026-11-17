@@ -1,34 +1,34 @@
 using BetterGenshinImpact.Core.Config;
 using Newtonsoft.Json;
-using OpenccNetLib;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace BetterGenshinImpact.Service.I18n;
 
 /// <summary>
-/// 界面多语言服务。简体中文原文同时作为资源键和缺省文案，因此不需要 zh-Hans.json；
-/// 繁体中文在运行时通过 OpenCC 动态转换，因此也不需要 zh-Hant.json。
+/// English-locked UI localization service.
 /// </summary>
 public sealed class I18nService : INotifyPropertyChanged
 {
-    public const string DefaultLanguage = "zh-Hans";
-    private const string TraditionalLanguage = "zh-Hant";
+    public const string DefaultLanguage = "en";
 
-    private static readonly Opencc TraditionalChineseConverter = new(OpenccConfig.S2Twp);
     private readonly string _i18nDirectory = Global.Absolute(Path.Combine("User", "I18n"));
     private IReadOnlyDictionary<string, string> _translations = new Dictionary<string, string>();
-    private bool _useTraditionalChinese;
+    private KeyValuePair<string, string>[] _sortedPhrasePairs = [];
+    private readonly ConcurrentDictionary<string, string> _compositeCache = new(StringComparer.Ordinal);
     private long _revision;
 
     private I18nService()
     {
+        ChangeLanguage(DefaultLanguage);
     }
 
     public static I18nService Instance { get; } = new();
@@ -42,21 +42,22 @@ public sealed class I18nService : INotifyPropertyChanged
 
     public void ChangeLanguage(string? language)
     {
-        language = string.IsNullOrWhiteSpace(language) ? DefaultLanguage : language;
-        _useTraditionalChinese = string.Equals(language, TraditionalLanguage, StringComparison.OrdinalIgnoreCase);
-        _translations = _useTraditionalChinese
-            ? new Dictionary<string, string>()
-            : LoadTranslations(language);
+        language = DefaultLanguage;
+        _translations = LoadTranslations(language);
+        _sortedPhrasePairs = _translations
+            .Where(kv => kv.Key.Length >= 2 && !string.IsNullOrWhiteSpace(kv.Value) && ContainsChinese(kv.Key))
+            .OrderByDescending(kv => kv.Key.Length)
+            .ToArray();
+        _compositeCache.Clear();
 
         try
         {
-            var culture = CultureInfo.GetCultureInfo(language);
+            var culture = CultureInfo.GetCultureInfo("en-US");
             CultureInfo.CurrentUICulture = culture;
             CultureInfo.DefaultThreadCurrentUICulture = culture;
         }
         catch (CultureNotFoundException)
         {
-            // 自定义语言文件名也允许使用；只是不修改 .NET 的 CurrentUICulture。
         }
 
         _revision++;
@@ -65,26 +66,88 @@ public sealed class I18nService : INotifyPropertyChanged
 
     public string Translate(string key)
     {
-        if (_useTraditionalChinese)
+        if (string.IsNullOrEmpty(key))
         {
-            return TraditionalChineseConverter.Convert(key);
+            return key ?? string.Empty;
         }
 
-        return _translations.TryGetValue(key, out var translation) && !string.IsNullOrWhiteSpace(translation)
-            ? translation
-            : key;
+        if (_translations.TryGetValue(key, out var translation) && !string.IsNullOrWhiteSpace(translation))
+        {
+            return translation;
+        }
+
+        if (_translations.TryGetValue($"'{key}'", out var quotedTranslation) && !string.IsNullOrWhiteSpace(quotedTranslation))
+        {
+            return quotedTranslation;
+        }
+
+        var trimmed = key.Trim();
+        if (trimmed.Length != key.Length
+            && _translations.TryGetValue(trimmed, out var trimmedTranslation)
+            && !string.IsNullOrWhiteSpace(trimmedTranslation))
+        {
+            return key.Replace(trimmed, trimmedTranslation, StringComparison.Ordinal);
+        }
+
+        if (!ContainsChinese(key))
+        {
+            return key;
+        }
+
+        return _compositeCache.GetOrAdd(key, TranslateComposite);
+    }
+
+    private string TranslateComposite(string input)
+    {
+        var result = input;
+        foreach (var kv in _sortedPhrasePairs)
+        {
+            if (result.Contains(kv.Key, StringComparison.Ordinal))
+            {
+                result = result.Replace(kv.Key, kv.Value, StringComparison.Ordinal);
+                if (!ContainsChinese(result))
+                {
+                    break;
+                }
+            }
+        }
+
+        result = result
+            .Replace("：", ": ", StringComparison.Ordinal)
+            .Replace("（", " (", StringComparison.Ordinal)
+            .Replace("）", ")", StringComparison.Ordinal)
+            .Replace("，", ", ", StringComparison.Ordinal)
+            .Replace("。", ". ", StringComparison.Ordinal)
+            .Replace("；", "; ", StringComparison.Ordinal)
+            .Replace("、", ", ", StringComparison.Ordinal)
+            .Replace("！", "!", StringComparison.Ordinal)
+            .Replace("？", "?", StringComparison.Ordinal)
+            .Replace("「", "\"", StringComparison.Ordinal)
+            .Replace("」", "\"", StringComparison.Ordinal)
+            .Replace("“", "\"", StringComparison.Ordinal)
+            .Replace("”", "\"", StringComparison.Ordinal);
+
+        return result.TrimEnd();
+    }
+
+    private static bool ContainsChinese(string text)
+    {
+        foreach (var ch in text)
+        {
+            if (ch is >= '\u4e00' and <= '\u9fff')
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private IReadOnlyDictionary<string, string> LoadTranslations(string language)
     {
-        if (string.Equals(language, DefaultLanguage, StringComparison.OrdinalIgnoreCase))
-        {
-            return new Dictionary<string, string>();
-        }
-
         try
         {
-            var filePath = Path.Combine(_i18nDirectory, $"{language}.json");
+            var filePath = Path.Combine(_i18nDirectory, "en.json");
             if (!File.Exists(filePath))
             {
                 return new Dictionary<string, string>();
@@ -98,7 +161,7 @@ public sealed class I18nService : INotifyPropertyChanged
         }
         catch (Exception exception)
         {
-            Debug.WriteLine($"加载语言文件 {language}.json 失败：{exception}");
+            Debug.WriteLine($"Failed to load en.json: {exception}");
             return new Dictionary<string, string>();
         }
     }

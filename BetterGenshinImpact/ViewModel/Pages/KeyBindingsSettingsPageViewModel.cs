@@ -32,9 +32,9 @@ public partial class KeyBindingsSettingsPageViewModel : ViewModel
 
     public IReadOnlyList<GenshinRegistrySourceOption> RegistrySourceOptions { get; } =
     [
-        new(GenshinRegistryType.Auto, "自动判断"),
-        new(GenshinRegistryType.Chinese, "国服"),
-        new(GenshinRegistryType.Global, "国际服")
+        new(GenshinRegistryType.Auto, "Auto Detect"),
+        new(GenshinRegistryType.Chinese, "CN Server"),
+        new(GenshinRegistryType.Global, "Global Server")
     ];
 
     [ObservableProperty]

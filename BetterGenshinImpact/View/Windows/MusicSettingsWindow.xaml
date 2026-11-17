@@ -199,7 +199,7 @@
                                                 <TextBlock Grid.Column="1"
                                                            Margin="8,0"
                                                            VerticalAlignment="Center"
-                                                           Text="{Binding Name}"
+                                                           Text="{i18n:TValue Name}"
                                                            TextTrimming="CharacterEllipsis" />
                                                 <TextBlock Grid.Column="2"
                                                            VerticalAlignment="Center"
@@ -258,7 +258,7 @@
                                             </Grid.ColumnDefinitions>
                                             <TextBlock VerticalAlignment="Center"
                                                        FontWeight="SemiBold"
-                                                       Text="{Binding Key}" />
+                                                       Text="{i18n:TValue Key}" />
                                             <ui:NumberBox Grid.Column="1"
                                                           Maximum="127"
                                                           Minimum="0"

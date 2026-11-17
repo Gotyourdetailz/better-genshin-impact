@@ -14,7 +14,7 @@
                       Height="32"
                       Padding="11,4"
                       HorizontalContentAlignment="Stretch"
-                      AutomationProperties.Name="多选下拉框"
+                      AutomationProperties.Name="Multi-Select Dropdown"
                       Background="{DynamicResource ControlFillColorDefaultBrush}"
                       BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
                       BorderThickness="1"
@@ -142,7 +142,7 @@
 
                     <ui:TextBox x:Name="SearchTextBox"
                                 Margin="0,0,0,6"
-                                AutomationProperties.Name="搜索选项"
+                                AutomationProperties.Name="Search Options"
                                 PlaceholderText="{Binding SearchPlaceholderText, ElementName=Root}"
                                 TextChanged="SearchTextBox_TextChanged"
                                 PreviewKeyDown="SearchTextBox_PreviewKeyDown" />
@@ -156,15 +156,15 @@
                         </Grid.ColumnDefinitions>
 
                         <Button Padding="8,3"
-                                AutomationProperties.Name="全选筛选结果"
+                                AutomationProperties.Name="Select All Filtered"
                                 Click="SelectAllButton_Click"
-                                Content="全选" />
+                                Content="Select All" />
                         <Button Grid.Column="1"
                                 Margin="4,0,0,0"
                                 Padding="8,3"
-                                AutomationProperties.Name="清空选择"
+                                AutomationProperties.Name="Clear Selection"
                                 Click="ClearSelectionButton_Click"
-                                Content="清空" />
+                                Content="Clear" />
                         <TextBlock x:Name="SelectionCountTextBlock"
                                    Grid.Column="3"
                                    Margin="8,0,2,0"
@@ -178,7 +178,7 @@
                         <Grid>
                             <ListBox x:Name="OptionsListBox"
                                      Padding="0,4,0,0"
-                                     AutomationProperties.Name="可选项"
+                                     AutomationProperties.Name="Available Options"
                                      Background="Transparent"
                                      BorderThickness="0"
                                      ItemsSource="{Binding FilteredItems, ElementName=Root}"
@@ -211,7 +211,7 @@
                                        VerticalAlignment="Center"
                                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                        IsHitTestVisible="False"
-                                       Text="没有匹配的选项"
+                                       Text="No matching options"
                                        Visibility="Collapsed" />
                         </Grid>
                     </Border>

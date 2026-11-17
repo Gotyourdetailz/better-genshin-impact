@@ -4,7 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        Title="自动连招行为树"
+        Title="Auto Combo Behavior Tree"
         Width="465"
         Height="550"
         WindowStyle="None"
@@ -29,12 +29,12 @@
                           HorizontalScrollBarVisibility="Auto">
                 <StackPanel>
                     <!--  主树：技能连招  -->
-                    <TextBlock Text="连招树"
+                    <TextBlock Text="Combo Tree"
                                FontSize="12"
                                Margin="4,0,0,2"
                                Foreground="#99FFFFFF" />
                     <TextBox x:Name="TreeText"
-                             Text="{Binding LatestTreeAscii, Mode=OneWay, TargetNullValue=等待LLM思考…}"
+                             Text="{Binding LatestTreeAscii, Mode=OneWay, TargetNullValue='Waiting for LLM...'}"
                              IsReadOnly="True"
                              FontFamily="Cascadia Mono, Consolas, monospace"
                              FontSize="13"
@@ -55,12 +55,12 @@
                     </TextBox>
 
                     <!--  兜底树：基础攻击  -->
-                    <TextBlock Text="兜底攻击树"
+                    <TextBlock Text="Fallback Attack Tree"
                                FontSize="12"
                                Margin="4,6,0,2"
                                Foreground="#99FFFFFF" />
                     <TextBox x:Name="FallbackTreeText"
-                             Text="{Binding LatestFallbackTreeAscii, Mode=OneWay, TargetNullValue=尚未构建…}"
+                             Text="{Binding LatestFallbackTreeAscii, Mode=OneWay, TargetNullValue='Not built yet...'}"
                              IsReadOnly="True"
                              FontFamily="Cascadia Mono, Consolas, monospace"
                              FontSize="12"

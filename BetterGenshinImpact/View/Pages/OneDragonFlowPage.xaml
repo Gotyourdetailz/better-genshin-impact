@@ -174,7 +174,7 @@
                                             <TextBlock Grid.Column="2"
                                                        VerticalAlignment="Center"
                                                        IsHitTestVisible="False"
-                                                       Text="{Binding Name}" Width="100">
+                                                       Text="{i18n:TValue Name}" MinWidth="100" Margin="0,0,8,0">
                                                 <TextBlock.Style>
                                                     <Style TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
                                                         <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />

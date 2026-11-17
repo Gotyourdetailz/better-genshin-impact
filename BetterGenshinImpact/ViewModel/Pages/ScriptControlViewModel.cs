@@ -182,8 +182,8 @@ public partial class ScriptControlViewModel : ViewModel
         };
         var rangeComboBoxItems = new List<object>
         {
-            new { Text = "当前配置组", Value = "CurrentConfig" },
-            new { Text = "所有", Value = "All" }
+            new { Text = "Current Group", Value = "CurrentConfig" },
+            new { Text = "All", Value = "All" }
         };
         rangeComboBox.DisplayMemberPath = "Text"; // 显示的文本
         rangeComboBox.SelectedValuePath = "Value"; // 绑定的值
@@ -201,14 +201,14 @@ public partial class ScriptControlViewModel : ViewModel
         // 定义范围选项数据
         var dayRangeComboBoxItems = new List<object>
         {
-            new { Text = "1天" , Value = "1" },
-            new { Text = "3天", Value = "3" },
-            new { Text = "7天", Value = "7" },
-            new { Text = "15天", Value = "15" },
-            new { Text = "31天", Value = "31" },
-            new { Text = "61天", Value = "61" },
-            new { Text = "92天", Value = "92" },
-            new { Text = "所有", Value = "All" }
+            new { Text = "1 Day" , Value = "1" },
+            new { Text = "3 Days", Value = "3" },
+            new { Text = "7 Days", Value = "7" },
+            new { Text = "15 Days", Value = "15" },
+            new { Text = "31 Days", Value = "31" },
+            new { Text = "61 Days", Value = "61" },
+            new { Text = "92 Days", Value = "92" },
+            new { Text = "All", Value = "All" }
         };
         dayRangeComboBox.ItemsSource = dayRangeComboBoxItems;
         dayRangeComboBox.DisplayMemberPath = "Text"; // 显示的文本
@@ -218,7 +218,7 @@ public partial class ScriptControlViewModel : ViewModel
 
         CheckBox mergerStatsSwitch = new CheckBox
         {
-            Content = "合并相邻同名配置组",
+            Content = "Merge Adjacent Identical Groups",
             VerticalAlignment = VerticalAlignment.Center
         };
         stackPanel.Children.Add(mergerStatsSwitch);
@@ -226,7 +226,7 @@ public partial class ScriptControlViewModel : ViewModel
         // 开关控件：ToggleButton 或 CheckBox
         CheckBox faultStatsSwitch = new CheckBox
         {
-            Content = "异常情况统计",
+            Content = "Error & Exception Statistics",
             VerticalAlignment = VerticalAlignment.Center
         };
         stackPanel.Children.Add(faultStatsSwitch);
@@ -234,13 +234,13 @@ public partial class ScriptControlViewModel : ViewModel
         // 开关控件：ToggleButton 或 CheckBox
         CheckBox hoeingStatsSwitch = new CheckBox
         {
-            Content = "统计锄地摩拉怪物数",
+            Content = "Count Farming Mora & Monsters",
             VerticalAlignment = VerticalAlignment.Center
         };
 
         CheckBox GenerateFarmingPlanData = new CheckBox
         {
-            Content = "生成锄地规划数据",
+            Content = "Generate Farming Plan Data",
             VerticalAlignment = VerticalAlignment.Center
         };
         stackPanel.Children.Add(GenerateFarmingPlanData);
@@ -284,7 +284,7 @@ public partial class ScriptControlViewModel : ViewModel
         // 创建一个 TextBlock
         TextBlock hoeingDelayBlock = new TextBlock
         {
-            Text = "锄地延时(秒)：",
+            Text = "Farming Delay (s):",
             VerticalAlignment = VerticalAlignment.Center,
             FontSize = 16,
             Margin = new Thickness(0, 0, 10, 0)

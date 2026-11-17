@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using System.Windows;
 using BetterGenshinImpact.Helpers.Ui;
+using BetterGenshinImpact.Service.I18n;
 using Wpf.Ui.Controls;
 using MessageBoxButton = System.Windows.MessageBoxButton;
 using MessageBoxResult = System.Windows.MessageBoxResult;
@@ -123,12 +124,15 @@ public partial class ThemedMessageBox : FluentWindow
     /// </remarks>
     public static MessageBoxResult Show(
         string content,
-        string title = "提示",
+        string title = "Notice",
         MessageBoxButton button = MessageBoxButton.OK,
         MessageBoxIcon icon = MessageBoxIcon.Information,
         MessageBoxResult defaultResult = MessageBoxResult.None,
         Window? owner = null)
     {
+        title = I18nService.Instance.Translate(title);
+        content = I18nService.Instance.Translate(content);
+
         var messageBox = new ThemedMessageBox
         {
             Title = title
@@ -175,7 +179,7 @@ public partial class ThemedMessageBox : FluentWindow
     /// </remarks>
     public static Task<MessageBoxResult> ShowAsync(
         string content,
-        string title = "提示",
+        string title = "Notice",
         MessageBoxButton button = MessageBoxButton.OK,
         MessageBoxIcon icon = MessageBoxIcon.Information,
         MessageBoxResult defaultResult = MessageBoxResult.None,
@@ -236,30 +240,30 @@ public partial class ThemedMessageBox : FluentWindow
         switch (button)
         {
             case MessageBoxButton.OK:
-                messageBox.PrimaryButton.Content = "确定";
+                messageBox.PrimaryButton.Content = "OK";
                 messageBox.PrimaryButton.Visibility = Visibility.Visible;
                 break;
 
             case MessageBoxButton.OKCancel:
-                messageBox.PrimaryButton.Content = "确定";
+                messageBox.PrimaryButton.Content = "OK";
                 messageBox.PrimaryButton.Visibility = Visibility.Visible;
-                messageBox.SecondaryButton.Content = "取消";
+                messageBox.SecondaryButton.Content = "Cancel";
                 messageBox.SecondaryButton.Visibility = Visibility.Visible;
                 break;
 
             case MessageBoxButton.YesNo:
-                messageBox.PrimaryButton.Content = "是";
+                messageBox.PrimaryButton.Content = "Yes";
                 messageBox.PrimaryButton.Visibility = Visibility.Visible;
-                messageBox.SecondaryButton.Content = "否";
+                messageBox.SecondaryButton.Content = "No";
                 messageBox.SecondaryButton.Visibility = Visibility.Visible;
                 break;
 
             case MessageBoxButton.YesNoCancel:
-                messageBox.PrimaryButton.Content = "是";
+                messageBox.PrimaryButton.Content = "Yes";
                 messageBox.PrimaryButton.Visibility = Visibility.Visible;
-                messageBox.SecondaryButton.Content = "否";
+                messageBox.SecondaryButton.Content = "No";
                 messageBox.SecondaryButton.Visibility = Visibility.Visible;
-                messageBox.CloseButton.Content = "取消";
+                messageBox.CloseButton.Content = "Cancel";
                 messageBox.CloseButton.Visibility = Visibility.Visible;
                 break;
         }
@@ -270,13 +274,13 @@ public partial class ThemedMessageBox : FluentWindow
     /// <summary>
     /// 显示错误消息框（同步，阻塞调用）
     /// </summary>
-    public static void Error(string message, string title = "错误") =>
+    public static void Error(string message, string title = "Error") =>
         Show(message, title, MessageBoxButton.OK, MessageBoxIcon.Error);
 
     public static MessageBoxResult Error(string message, string title, MessageBoxButton button, MessageBoxResult defaultResult = MessageBoxResult.None) =>
         Show(message, title, button, MessageBoxIcon.Error, defaultResult);
 
-    public static Task<MessageBoxResult> ErrorAsync(string message, string title = "错误") =>
+    public static Task<MessageBoxResult> ErrorAsync(string message, string title = "Error") =>
         ShowAsync(message, title, MessageBoxButton.OK, MessageBoxIcon.Error);
 
     public static Task<MessageBoxResult> ErrorAsync(string message, string title, MessageBoxButton button, MessageBoxResult defaultResult = MessageBoxResult.None) =>
@@ -289,13 +293,13 @@ public partial class ThemedMessageBox : FluentWindow
     /// <summary>
     /// 显示警告消息框（同步，阻塞调用）
     /// </summary>
-    public static void Warning(string message, string title = "警告") =>
+    public static void Warning(string message, string title = "Warning") =>
         Show(message, title, MessageBoxButton.OK, MessageBoxIcon.Warning);
 
     public static MessageBoxResult Warning(string message, string title, MessageBoxButton button, MessageBoxResult defaultResult = MessageBoxResult.None) =>
         Show(message, title, button, MessageBoxIcon.Warning, defaultResult);
 
-    public static Task<MessageBoxResult> WarningAsync(string message, string title = "警告") =>
+    public static Task<MessageBoxResult> WarningAsync(string message, string title = "Warning") =>
         ShowAsync(message, title, MessageBoxButton.OK, MessageBoxIcon.Warning);
 
     public static Task<MessageBoxResult> WarningAsync(string message, string title, MessageBoxButton button, MessageBoxResult defaultResult = MessageBoxResult.None) =>
@@ -308,13 +312,13 @@ public partial class ThemedMessageBox : FluentWindow
     /// <summary>
     /// 显示信息消息框（同步，阻塞调用）
     /// </summary>
-    public static void Information(string message, string title = "信息") =>
+    public static void Information(string message, string title = "Information") =>
         Show(message, title, MessageBoxButton.OK, MessageBoxIcon.Information);
 
     public static MessageBoxResult Information(string message, string title, MessageBoxButton button, MessageBoxResult defaultResult = MessageBoxResult.None) =>
         Show(message, title, button, MessageBoxIcon.Information, defaultResult);
 
-    public static Task<MessageBoxResult> InformationAsync(string message, string title = "信息") =>
+    public static Task<MessageBoxResult> InformationAsync(string message, string title = "Information") =>
         ShowAsync(message, title, MessageBoxButton.OK, MessageBoxIcon.Information);
 
     public static Task<MessageBoxResult> InformationAsync(string message, string title, MessageBoxButton button, MessageBoxResult defaultResult = MessageBoxResult.None) =>
@@ -327,13 +331,13 @@ public partial class ThemedMessageBox : FluentWindow
     /// <summary>
     /// 显示成功消息框（同步，阻塞调用）
     /// </summary>
-    public static void Success(string message, string title = "成功") =>
+    public static void Success(string message, string title = "Success") =>
         Show(message, title, MessageBoxButton.OK, MessageBoxIcon.Success);
 
     public static MessageBoxResult Success(string message, string title, MessageBoxButton button, MessageBoxResult defaultResult = MessageBoxResult.None) =>
         Show(message, title, button, MessageBoxIcon.Success, defaultResult);
 
-    public static Task<MessageBoxResult> SuccessAsync(string message, string title = "成功") =>
+    public static Task<MessageBoxResult> SuccessAsync(string message, string title = "Success") =>
         ShowAsync(message, title, MessageBoxButton.OK, MessageBoxIcon.Success);
 
     public static Task<MessageBoxResult> SuccessAsync(string message, string title, MessageBoxButton button, MessageBoxResult defaultResult = MessageBoxResult.None) =>
@@ -346,7 +350,7 @@ public partial class ThemedMessageBox : FluentWindow
     public static MessageBoxResult Question(string message, string title, MessageBoxButton button, MessageBoxResult defaultResult = MessageBoxResult.None) =>
         Show(message, title, button, MessageBoxIcon.Question, defaultResult);
 
-    public static Task<MessageBoxResult> QuestionAsync(string message, string title = "确认") =>
+    public static Task<MessageBoxResult> QuestionAsync(string message, string title = "Confirm") =>
         ShowAsync(message, title, MessageBoxButton.YesNo, MessageBoxIcon.Question);
 
     public static Task<MessageBoxResult> QuestionAsync(string message, string title, MessageBoxButton button, MessageBoxResult defaultResult = MessageBoxResult.None) =>

@@ -54,15 +54,15 @@ public sealed record PaddleOcrCpuOptions
 
     public string Describe(int inheritedThreads)
     {
-        static string Threads(int count) => count == 0 ? "自动（ORT 默认）" : count.ToString();
-        if (Mode == PaddleOcrCpuMode.RuntimeAuto) return "OCR 使用 ONNX Runtime 自动调度";
+        static string Threads(int count) => count == 0 ? "Auto (ORT Default)" : count.ToString();
+        if (Mode == PaddleOcrCpuMode.RuntimeAuto) return "OCR uses ONNX Runtime auto-scheduling";
         var det = Resolve(true);
         var rec = Resolve(false);
-        if (det == null || rec == null) return $"OCR 跟随全局线程设置：{Threads(inheritedThreads)}";
-        var mode = Mode == PaddleOcrCpuMode.GameplayPriority ? "游戏流畅优先" : "自定义设置";
-        return $"OCR {mode} · 文本检测 {Threads(det.IntraOpThreads)} / 文字识别 {Threads(rec.IntraOpThreads)} · "
-            + (det.ParallelExecution ? $"节点并行 {Threads(det.InterOpThreads)}" : "节点顺序执行")
-            + $" · 自旋{(det.AllowSpinning ? "开启" : "关闭")}";
+        if (det == null || rec == null) return $"OCR follows global thread setting: {Threads(inheritedThreads)}";
+        var mode = Mode == PaddleOcrCpuMode.GameplayPriority ? "Gameplay Smoothness Priority" : "Custom Settings";
+        return $"OCR {mode} · Detection {Threads(det.IntraOpThreads)} / Recognition {Threads(rec.IntraOpThreads)} · "
+            + (det.ParallelExecution ? $"Parallel Nodes {Threads(det.InterOpThreads)}" : "Sequential Nodes")
+            + $" · Spin {(det.AllowSpinning ? "On" : "Off")}";
     }
 
     // 跟随全局设置时保留旧签名，避免新增默认参数使已有设备验证失效。

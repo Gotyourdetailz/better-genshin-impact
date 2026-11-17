@@ -104,7 +104,7 @@ public partial class MultiSelectComboBox : UserControl
         nameof(PlaceholderText),
         typeof(string),
         typeof(MultiSelectComboBox),
-        new PropertyMetadata("请选择"));
+        new PropertyMetadata("Please select"));
 
     public string SearchPlaceholderText
     {
@@ -116,7 +116,7 @@ public partial class MultiSelectComboBox : UserControl
         nameof(SearchPlaceholderText),
         typeof(string),
         typeof(MultiSelectComboBox),
-        new PropertyMetadata("搜索选项"));
+        new PropertyMetadata("Search options"));
 
     public string SelectionText
     {
@@ -128,7 +128,7 @@ public partial class MultiSelectComboBox : UserControl
         nameof(SelectionText),
         typeof(string),
         typeof(MultiSelectComboBox),
-        new PropertyMetadata("请选择"));
+        new PropertyMetadata("Please select"));
 
     public static readonly DependencyProperty SelectionTextProperty = SelectionTextPropertyKey.DependencyProperty;
 
@@ -312,7 +312,7 @@ public partial class MultiSelectComboBox : UserControl
 
         if (SelectionCountTextBlock is not null)
         {
-            SelectionCountTextBlock.Text = $"已选 {selectedTexts.Count} 项";
+            SelectionCountTextBlock.Text = $"Selected {selectedTexts.Count}";
         }
     }
 

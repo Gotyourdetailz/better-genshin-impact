@@ -142,10 +142,10 @@ public partial class TaskSettingsPageViewModel : ViewModel
     private bool _switchAutoComboEnabled;
 
     [ObservableProperty]
-    private string _switchAutoComboButtonText = "启动";
+    private string _switchAutoComboButtonText = "Start";
 
     [ObservableProperty]
-    private string _switchAutoComboRunButtonText = "测试运行";
+    private string _switchAutoComboRunButtonText = "Test Run";
 
     private bool _autoComboRunRunning;
 
@@ -193,13 +193,13 @@ public partial class TaskSettingsPageViewModel : ViewModel
     private bool _switchAutoFishingEnabled;
 
     [ObservableProperty]
-    private string _switchAutoFishingButtonText = "启动";
+    private string _switchAutoFishingButtonText = "Start";
 
     [ObservableProperty]
     private bool _switchAutoLeyLineOutcropEnabled;
 
     [ObservableProperty]
-    private string _switchAutoLeyLineOutcropButtonText = "启动";
+    private string _switchAutoLeyLineOutcropButtonText = "Start";
 
     [ObservableProperty]
     private bool _scanDropsAfterRewardEnabledUi;
@@ -209,10 +209,10 @@ public partial class TaskSettingsPageViewModel : ViewModel
         .Cast<FishingTimePolicy>()
         .ToFrozenDictionary(
             e => (Enum)e,
-            e => e.GetType()
+            e => BetterGenshinImpact.Service.I18n.I18nService.Instance.Translate(e.GetType()
                 .GetField(e.ToString())?
                 .GetCustomAttribute<DescriptionAttribute>()?
-                .Description ?? e.ToString());
+                .Description ?? e.ToString()));
 
     private bool saveScreenshotOnKeyTick;
     private bool _suppressScanDropsAfterRewardPrompt;
@@ -231,27 +231,27 @@ public partial class TaskSettingsPageViewModel : ViewModel
         .Cast<RecognitionFailurePolicy>()
         .ToFrozenDictionary(
             e => (Enum)e,
-            e => e.GetType()
+            e => BetterGenshinImpact.Service.I18n.I18nService.Instance.Translate(e.GetType()
                 .GetField(e.ToString())?
                 .GetCustomAttribute<DescriptionAttribute>()?
-                .Description ?? e.ToString());
+                .Description ?? e.ToString()));
 
     [ObservableProperty]
     private bool _switchGetGridIconsEnabled;
     [ObservableProperty]
-    private string _switchGetGridIconsButtonText = "启动";
+    private string _switchGetGridIconsButtonText = "Start";
     [ObservableProperty]
     private FrozenDictionary<Enum, string> _gridNameDict = Enum.GetValues(typeof(GridScreenName))
         .Cast<GridScreenName>()
         .ToFrozenDictionary(
             e => (Enum)e,
-            e => e.GetType()
+            e => BetterGenshinImpact.Service.I18n.I18nService.Instance.Translate(e.GetType()
                 .GetField(e.ToString())?
                 .GetCustomAttribute<DescriptionAttribute>()?
-                .Description ?? e.ToString());
+                .Description ?? e.ToString()));
 
     [ObservableProperty]
-    private string _switchGridIconsAccuracyTestButtonText = "运行模型准确率测试";
+    private string _switchGridIconsAccuracyTestButtonText = "Run Model Accuracy Test";
 
     /// <summary>数量 OCR 测试当前选择的分类或当前一页模式。</summary>
     [ObservableProperty]
@@ -262,16 +262,16 @@ public partial class TaskSettingsPageViewModel : ViewModel
         .GetValues<InventoryCountComparisonTarget>()
         .ToFrozenDictionary(
             e => (Enum)e,
-            e => e.GetType()
+            e => BetterGenshinImpact.Service.I18n.I18nService.Instance.Translate(e.GetType()
                 .GetField(e.ToString())?
                 .GetCustomAttribute<DescriptionAttribute>()?
-                .Description ?? e.ToString());
+                .Description ?? e.ToString()));
 
     [ObservableProperty]
     private bool _switchAutoRedeemCodeEnabled;
 
     [ObservableProperty]
-    private string _switchAutoRedeemCodeButtonText = "启动";
+    private string _switchAutoRedeemCodeButtonText = "Start";
 
     public TaskSettingsPageViewModel(IConfigService configService, INavigationService navigationService, TaskTriggerDispatcher taskTriggerDispatcher)
     {

@@ -755,12 +755,12 @@
                                          VerticalAlignment="Center"
                                          Fill="{DynamicResource AccentFillColorDefaultBrush}" />
                                 <ui:TextBlock FontTypography="BodyStrong"
-                                              Text="{Binding VoiceDiagnosticState.VerdictText}" />
+                                              Text="{i18n:TValue VoiceDiagnosticState.VerdictText}" />
                             </StackPanel>
                             <ui:TextBlock Grid.Column="1"
                                           FontSize="18"
                                           FontWeight="SemiBold"
-                                          Text="{Binding VoiceDiagnosticState.ProbabilityText}" />
+                                          Text="{i18n:TValue VoiceDiagnosticState.ProbabilityText}" />
                         </Grid>
                         <ProgressBar Grid.Row="1"
                                      Height="6"
@@ -778,21 +778,21 @@
                                               Text="{i18n:T 模型概率}" />
                                 <ui:TextBlock Margin="0,4,0,0"
                                               FontWeight="SemiBold"
-                                              Text="{Binding VoiceDiagnosticState.ProbabilityText}" />
+                                              Text="{i18n:TValue VoiceDiagnosticState.ProbabilityText}" />
                             </StackPanel>
                             <StackPanel Grid.Column="1">
                                 <ui:TextBlock Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
                                               Text="{i18n:T RMS}" />
                                 <ui:TextBlock Margin="0,4,0,0"
                                               FontWeight="SemiBold"
-                                              Text="{Binding VoiceDiagnosticState.RmsText}" />
+                                              Text="{i18n:TValue VoiceDiagnosticState.RmsText}" />
                             </StackPanel>
                             <StackPanel Grid.Column="2">
                                 <ui:TextBlock Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
                                               Text="{i18n:T 峰值}" />
                                 <ui:TextBlock Margin="0,4,0,0"
                                               FontWeight="SemiBold"
-                                              Text="{Binding VoiceDiagnosticState.PeakText}" />
+                                              Text="{i18n:TValue VoiceDiagnosticState.PeakText}" />
                             </StackPanel>
                         </Grid>
                         <Grid Grid.Row="3" Margin="0,12,0,0">
@@ -801,17 +801,17 @@
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
                             <ui:TextBlock FontWeight="SemiBold"
-                                          Text="{Binding VoiceDiagnosticState.DecisionText}" />
+                                          Text="{i18n:TValue VoiceDiagnosticState.DecisionText}" />
                             <ui:TextBlock Grid.Column="1"
                                           Margin="12,0,0,0"
                                           VerticalAlignment="Center"
                                           Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                                          Text="{Binding VoiceDiagnosticState.StatusText}" />
+                                          Text="{i18n:TValue VoiceDiagnosticState.StatusText}" />
                         </Grid>
                         <ui:TextBlock Grid.Row="4"
                                       Margin="0,8,0,0"
                                       Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                                      Text="{Binding VoiceDiagnosticState.ThresholdText}"
+                                      Text="{i18n:TValue VoiceDiagnosticState.ThresholdText}"
                                       TextWrapping="Wrap" />
                         <Grid Grid.Row="5" Margin="0,14,0,0">
                             <Grid.ColumnDefinitions>
@@ -821,7 +821,7 @@
                             <ui:TextBlock Margin="0,0,12,0"
                                           VerticalAlignment="Center"
                                           Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                                          Text="{Binding VoiceDiagnosticState.RecordingStatusText}"
+                                          Text="{i18n:TValue VoiceDiagnosticState.RecordingStatusText}"
                                           TextTrimming="CharacterEllipsis" />
                             <ui:Button Grid.Column="1"
                                        Command="{Binding ToggleVoiceDiagnosticRecordingCommand}"

@@ -42,31 +42,31 @@ public partial class HardwareAccelerationViewModel : ObservableObject, IViewMode
     public int MaxCpuThreads => Environment.ProcessorCount;
     public PaddleOcrCpuModeChoice[] OcrCpuModeChoices { get; } =
     [
-        new(PaddleOcrCpuMode.FollowGlobal, "跟随全局设置", "使用 CPU 卡片中的全局线程数。"),
-        new(PaddleOcrCpuMode.RuntimeAuto, "运行库自动调度", "不指定线程参数，由 ONNX Runtime 决定。"),
-        new(PaddleOcrCpuMode.GameplayPriority, "游戏流畅优先", "限制 OCR 的并行线程，减少游戏掉帧。"),
-        new(PaddleOcrCpuMode.Custom, "自定义设置", "分别指定文本检测、文字识别和模型节点的线程数。")
+        new(PaddleOcrCpuMode.FollowGlobal, "Follow Global Settings", "Use the global thread count from the CPU card."),
+        new(PaddleOcrCpuMode.RuntimeAuto, "Runtime Auto-Schedule", "Leave thread parameters unspecified and let ONNX Runtime decide."),
+        new(PaddleOcrCpuMode.GameplayPriority, "Gameplay Smoothness Priority", "Limit parallel OCR threads to reduce game frame drops."),
+        new(PaddleOcrCpuMode.Custom, "Custom Settings", "Configure thread counts for text detection, recognition, and graph nodes individually.")
     ];
     public PaddleOcrCpuConfig PaddleOcrCpu { get; }
     public bool IsOcrCpuCustom => PaddleOcrCpu.Mode == PaddleOcrCpuMode.Custom;
     public bool IsOcrCpuConfigured => PaddleOcrCpu.Mode is PaddleOcrCpuMode.GameplayPriority or PaddleOcrCpuMode.Custom;
     public string OcrCpuPreview => PaddleOcrCpu.ToOptions().Describe(CpuThreads);
     public string OcrCpuApplicability => ForceCpuOcr || SelectedEngine?.IsCpu == true
-        ? "应用并重启后用于 PPOCR 的 CPU 检测和识别会话。"
-        : "当前选择让 OCR 跟随其他引擎；以下参数会保存，在 PPOCR 使用纯 CPU 时生效。";
-    public string OcrCpuModeHint => $"当前可用逻辑处理器数：{Environment.ProcessorCount}。" + (PaddleOcrCpu.Mode switch
+        ? "Used for PPOCR CPU detection and recognition sessions after applying and restarting."
+        : "Currently OCR follows the selected engine; these parameters are saved and apply when PPOCR uses CPU.";
+    public string OcrCpuModeHint => $"Available logical processors: {Environment.ProcessorCount}. " + (PaddleOcrCpu.Mode switch
     {
-        PaddleOcrCpuMode.GameplayPriority => "文本检测使用逻辑处理器数的一半；文字识别使用四分之一并限制在 2～4 个线程。两个模型均顺序执行节点，在降低 OCR CPU 峰值的同时保留必要性能。",
-        PaddleOcrCpuMode.Custom => "可分别配置文本检测和文字识别的计算线程。0 表示由 ONNX Runtime 自动选择；模型节点线程数仅在开启节点并行时生效。",
-        PaddleOcrCpuMode.RuntimeAuto => "不指定 OCR 的线程数、执行方式和线程等待策略，完全交给 ONNX Runtime 调度；CPU 卡片中的全局线程数不会用于 OCR。",
-        _ => "OCR 与其他 CPU 模型使用相同的全局线程数；全局线程数为 0 时由 ONNX Runtime 自动选择。"
+        PaddleOcrCpuMode.GameplayPriority => "Text detection uses half of logical processors; text recognition uses one quarter (clamped to 2-4 threads). Both models run nodes sequentially to reduce OCR CPU spikes while maintaining performance.",
+        PaddleOcrCpuMode.Custom => "Configure compute threads for text detection and recognition separately. 0 lets ONNX Runtime choose automatically; graph node threads only apply when parallel graph execution is enabled.",
+        PaddleOcrCpuMode.RuntimeAuto => "Does not specify OCR thread counts, execution mode, or thread spinning strategy, leaving scheduling entirely to ONNX Runtime.",
+        _ => "OCR shares the global CPU thread count; 0 lets ONNX Runtime choose automatically."
     });
     public string CurrentRuntimeText => _runtime.Current.Description;
     public string CurrentEngineName => _runtime.Current.Engine == InferenceDeviceType.Cpu ? "CPU" : _runtime.Current.Engine.ToString();
     public string CurrentOcrText => _runtime.Current.OcrDescription;
     public string CurrentValidationText => _runtime.Current.Engine == InferenceDeviceType.Cpu
-        ? "内置 CPU · 无需额外验证"
-        : _runtime.IsCurrentValidated ? "模型兼容性检查通过" : "已生效 · 尚未完成模型兼容性检查";
+        ? "Built-in CPU · No extra validation needed"
+        : _runtime.IsCurrentValidated ? "Model compatibility verified" : "Active · Model compatibility check pending";
     private HardwareAccelerationConfig Config => _configService.Get().HardwareAccelerationConfig;
     public bool HasPendingChanges => _runtime.HasPendingRestart;
     public string PendingText
@@ -81,25 +81,25 @@ public partial class HardwareAccelerationViewModel : ObservableObject, IViewMode
         }
     }
     public bool HasTreeImage => _diagnostics.HasDomainTreeImage;
-    public string TreeImageText => HasTreeImage ? "完整古树 Detect · 预热 1 次，测量 10 次" : "测试图片待提供";
-    public string TreeBenchmarkEmptyText => HasTreeImage ? "还没有测速结果" : "接入测试图片后可测量完整 Detect 耗时。";
+    public string TreeImageText => HasTreeImage ? "Full Irminsul Tree Detect · 1 warmup, 10 measured runs" : "Test image unavailable";
+    public string TreeBenchmarkEmptyText => HasTreeImage ? "No benchmark results yet" : "Full Detect timing available when test image is provided.";
     public string ValidationHint => HasTreeImage
-        ? "重启后将运行一次古树检测，确认所选运行库和设备能够完成真实推理；失败时自动回退 CPU。此检查不判断每个算子的实际执行设备。"
-        : "重启后将运行一次 OCR 模型，确认所选运行库和设备能够完成真实推理；失败时自动回退 CPU。此检查不判断每个算子的实际执行设备。";
+        ? "After restarting, an Irminsul tree detection test will run to verify the selected runtime and device; falls back to CPU on failure."
+        : "After restarting, an OCR model test will run to verify the selected runtime and device; falls back to CPU on failure.";
     public bool CanApply => !IsBusy && SelectedEngine is { SelectedDevice: not null, IsInstalled: true }
         && (HasDraftChanges || HasPendingChanges);
-    public string ApplyButtonText => HasPendingChanges && !HasDraftChanges ? "立即重启" : "应用并重启";
-    public string SelectionText => SelectedEngine == null ? "请选择推理引擎" : $"{SelectedEngine.Name} · {SelectedEngine.SelectedDevice?.Name ?? "尚无可用设备"}";
-    public string ApplyHint => IsBusy ? "请等待当前操作结束"
-        : SelectedEngine == null ? "点击卡片选择引擎"
+    public string ApplyButtonText => HasPendingChanges && !HasDraftChanges ? "Restart Now" : "Apply & Restart";
+    public string SelectionText => SelectedEngine == null ? "Please select an inference engine" : $"{SelectedEngine.Name} · {SelectedEngine.SelectedDevice?.Name ?? "No available device"}";
+    public string ApplyHint => IsBusy ? "Please wait for the current operation to finish"
+        : SelectedEngine == null ? "Click a card to select an engine"
         : !SelectedEngine.IsInstalled || SelectedEngine.SelectedDevice == null ? SelectedEngine.ApplyBlockReason
-        : HasDraftChanges ? "尚未应用 · 保存后可立即重启或稍后重启"
-        : HasPendingChanges ? "设置已保存 · 等待重启生效"
-        : "与当前生效设置相同";
-    public string BenchmarkHint => !_leases.IsAvailable ? "性能测试不会自动执行；任务运行中，结束任务后可手动测速。"
-        : "性能测试不会自动执行；点击按钮后使用当前生效配置，预热 1 次并连续测量 10 次。";
+        : HasDraftChanges ? "Not applied yet · Restart immediately or later after saving"
+        : HasPendingChanges ? "Settings saved · Restart required to take effect"
+        : "Matches current active settings";
+    public string BenchmarkHint => !_leases.IsAvailable ? "Benchmarks do not run automatically; stop the running task to benchmark manually."
+        : "Benchmarks do not run automatically; click to run 1 warmup and 10 measured iterations using the current active configuration.";
     public InferenceBenchmarkResult? OcrResult => Results.FirstOrDefault(r => r.Scene == "OCR");
-    public InferenceBenchmarkResult? TreeResult => Results.FirstOrDefault(r => r.Scene == "古树检测");
+    public InferenceBenchmarkResult? TreeResult => Results.FirstOrDefault(r => r.Scene is "古树检测" or "Irminsul Tree Detection");
     public bool HasOcrResult => OcrResult != null;
     public bool HasTreeResult => TreeResult != null;
     private bool HasDraftChanges
@@ -157,7 +157,7 @@ public partial class HardwareAccelerationViewModel : ObservableObject, IViewMode
         _isOcrAdvancedExpanded = false;
         PaddleOcrCpu.PropertyChanged += OcrCpuSettingsChanged;
         CpuThreadChoices = Enumerable.Range(0, Environment.ProcessorCount + 1)
-            .Select(i => new InferenceThreadChoice(i, i == 0 ? "自动（ORT 默认）" : i.ToString())).ToArray();
+            .Select(i => new InferenceThreadChoice(i, i == 0 ? "Auto (ORT Default)" : i.ToString())).ToArray();
         foreach (var engine in Enum.GetValues<InferenceDeviceType>().Where(engine => engine.IsSelectable()))
         {
             var card = new InferenceEngineCardViewModel(engine, Config.GetEngineSettings(engine));
@@ -216,16 +216,16 @@ public partial class HardwareAccelerationViewModel : ObservableObject, IViewMode
                 && !(card.IsCurrent && _runtime.IsCurrentValidated);
             if (card.IsCurrent && card.IsInstalled)
             {
-                card.StatusText = card.IsCpu ? "内置 · 无需安装" : (_runtime.IsCurrentValidated ? "模型验证通过" : "已生效 · 未验证");
-                if (!card.HasFailure) card.Details = "运行库已就绪。\n\n运行库目录：\n" + card.RuntimeDirectory;
+                card.StatusText = card.IsCpu ? "Built-in · No install needed" : (_runtime.IsCurrentValidated ? "Model verified" : "Active · Unverified");
+                if (!card.HasFailure) card.Details = "Runtime is ready.\n\nRuntime Directory:\n" + card.RuntimeDirectory;
             }
             else if (card.HasFailure)
             {
-                card.StatusText = "上次验证未通过";
-                card.Details = Config.LastValidationError + "\n\n运行库目录：\n" + card.RuntimeDirectory;
+                card.StatusText = "Last validation failed";
+                card.Details = Config.LastValidationError + "\n\nRuntime Directory:\n" + card.RuntimeDirectory;
             }
             else if (card.IsInstalled && string.IsNullOrWhiteSpace(card.ApplyBlockReason))
-                card.StatusText = Config.ValidatedEngines.Contains(card.Engine) ? "此前验证通过" : "已安装 · 尚未验证";
+                card.StatusText = Config.ValidatedEngines.Contains(card.Engine) ? "Previously verified" : "Installed · Unverified";
         }
         RefreshAvailability();
     }
@@ -249,18 +249,18 @@ public partial class HardwareAccelerationViewModel : ObservableObject, IViewMode
     [RelayCommand]
     private async Task ShowEngineDetailsAsync(InferenceEngineCardViewModel card)
         => await ThemedMessageBox.ShowAsync($"{card.StatusText}\n\n{card.Details}\n\n{card.DeviceMessage}",
-            $"{card.Name} · 运行库信息", MessageBoxButton.OK,
+            $"{card.Name} · Runtime Info", MessageBoxButton.OK,
             card.HasFailure ? ThemedMessageBox.MessageBoxIcon.Warning : ThemedMessageBox.MessageBoxIcon.Information);
 
     [RelayCommand]
-    private async Task ShowErrorAsync() => await ThemedMessageBox.ShowAsync(ErrorDetails, "操作详情", MessageBoxButton.OK, ThemedMessageBox.MessageBoxIcon.Error);
+    private async Task ShowErrorAsync() => await ThemedMessageBox.ShowAsync(ErrorDetails, "Operation Details", MessageBoxButton.OK, ThemedMessageBox.MessageBoxIcon.Error);
 
     [RelayCommand]
     private Task RefreshAsync() => RunAsync(token => RefreshCoreAsync(token));
 
     private async Task RefreshCoreAsync(CancellationToken token, InferenceEngineCardViewModel? updatedCard = null)
     {
-        ProgressText = "正在检测运行库和设备…";
+        ProgressText = "Detecting runtime and devices...";
         // 下载完成只刷新变更的引擎，避免其他运行库的探测拖住“应用并重启”。手动检测优先处理所选卡片。
         var cards = updatedCard != null ? new[] { updatedCard } : Engines.OrderByDescending(card => card == SelectedEngine).ToArray();
         foreach (var card in cards)
@@ -270,49 +270,49 @@ public partial class HardwareAccelerationViewModel : ObservableObject, IViewMode
             card.IsInstalled = installation.State == InferenceInstallationState.Installed;
             card.ApplyBlockReason = installation.State switch
             {
-                InferenceInstallationState.Missing => "请先下载运行库，再应用设置",
-                InferenceInstallationState.MissingDependencies => "运行库已安装，仍需点击“补齐配套依赖”",
-                _ => "正在识别支持的设备…"
+                InferenceInstallationState.Missing => "Please download the runtime before applying settings",
+                InferenceInstallationState.MissingDependencies => "Runtime installed; click 'Install Dependencies' to complete setup",
+                _ => "Detecting supported devices..."
             };
             card.CanDownload = installation.State == InferenceInstallationState.Missing && !card.IsCpu;
             card.CanCompleteDependencies = installation.State == InferenceInstallationState.MissingDependencies;
             card.IsCurrent = card.Engine == _runtime.Current.Engine;
             card.HasFailure = Config.LastFailedEngine == card.Engine && Config.LastValidationError.Length > 0
                 && !(card.IsCurrent && _runtime.IsCurrentValidated);
-            card.Details = installation.Description + "\n\n运行库目录：\n" + installation.Directory;
-            card.StatusText = installation.State == InferenceInstallationState.Missing ? "DLL 未安装" : "配套依赖不完整";
+            card.Details = installation.Description + "\n\nRuntime Directory:\n" + installation.Directory;
+            card.StatusText = installation.State == InferenceInstallationState.Missing ? "DLL Not Installed" : "Missing Dependencies";
             if (card.HasFailure)
             {
-                card.StatusText = "上次验证未通过";
-                card.Details += "\n\n上次验证结果（历史记录）：\n" + Config.LastValidationError;
+                card.StatusText = "Last validation failed";
+                card.Details += "\n\nLast Validation Result (History):\n" + Config.LastValidationError;
             }
             else if (card.IsCurrent && card.IsInstalled)
-                card.StatusText = card.IsCpu ? "内置 · 无需安装" : (_runtime.IsCurrentValidated ? "模型验证通过" : "已生效 · 未验证");
+                card.StatusText = card.IsCpu ? "Built-in · No install needed" : (_runtime.IsCurrentValidated ? "Model verified" : "Active · Unverified");
             else if (card.IsInstalled)
-                card.StatusText = Config.ValidatedEngines.Contains(card.Engine) ? "此前验证通过" : "已安装 · 尚未验证";
+                card.StatusText = Config.ValidatedEngines.Contains(card.Engine) ? "Previously verified" : "Installed · Unverified";
             var preferred = card.SelectedDevice?.Id ?? card.Settings.DeviceId;
             try
             {
                 var found = await Task.Run(() => _devices.GetDevices(card.Engine, installation.Directory), token);
                 card.UpdateDevices(found, preferred);
-                if (card.IsInstalled) card.ApplyBlockReason = found.Count == 0 ? "未发现支持的设备，请查看卡片详情" : "";
-                card.DeviceMessage = found.Count == 0 ? (card.IsInstalled ? "未发现支持的设备，请查看详情。" : "安装完成后将自动识别设备。") : $"已发现 {found.Count} 个支持的设备";
-                if (card.IsInstalled && found.Count == 0) card.StatusText = "未发现支持的设备";
+                if (card.IsInstalled) card.ApplyBlockReason = found.Count == 0 ? "No supported devices found; see card details" : "";
+                card.DeviceMessage = found.Count == 0 ? (card.IsInstalled ? "No supported devices found; see details." : "Devices will be detected automatically after installation.") : $"Found {found.Count} supported device(s)";
+                if (card.IsInstalled && found.Count == 0) card.StatusText = "No supported devices found";
             }
             catch (OperationCanceledException) { throw; }
             catch (Exception e)
             {
                 card.UpdateDevices([], preferred);
-                card.ApplyBlockReason = "设备探测失败，请查看卡片详情";
+                card.ApplyBlockReason = "Device detection failed; see card details";
                 card.HasFailure = true;
-                card.StatusText = "设备探测失败";
-                card.DeviceMessage = "请查看详情，检查设备驱动和运行库。";
-                card.Details += "\n\n设备探测错误：\n" + e;
+                card.StatusText = "Device detection failed";
+                card.DeviceMessage = "Check details, device drivers, and runtime.";
+                card.Details += "\n\nDevice Detection Error:\n" + e;
             }
         }
         OnPropertyChanged(nameof(HasTreeImage)); OnPropertyChanged(nameof(TreeImageText)); OnPropertyChanged(nameof(TreeBenchmarkEmptyText));
         OnPropertyChanged(nameof(ValidationHint)); OnPropertyChanged(nameof(PendingText));
-        ProgressText = "运行库与设备信息已更新。";
+        ProgressText = "Runtime and device information updated.";
         await Task.Run(() => _installer.CleanupInstalledDownloadsAsync(token), token);
     }
 
@@ -322,9 +322,9 @@ public partial class HardwareAccelerationViewModel : ObservableObject, IViewMode
         if (!CanApply || SelectedEngine == null) return;
         await RunAsync(async token =>
         {
-            ProgressText = "正在保存推理设置…";
+            ProgressText = "Saving inference settings...";
             if (HasDraftChanges) _runtime.Apply(SelectedEngine.Engine, SelectedEngine.Settings, ForceCpuOcr, CpuThreads, PaddleOcrCpu.ToOptions());
-            ProgressText = "设置已保存，等待重启生效。";
+            ProgressText = "Settings saved; restart required to take effect.";
             await OfferRestartAsync();
         });
     }
@@ -368,9 +368,9 @@ public partial class HardwareAccelerationViewModel : ObservableObject, IViewMode
         SelectedEngine = card;
         await RunAsync(async token =>
         {
-            ProgressText = "正在获取下载清单…";
+            ProgressText = "Fetching download manifest...";
             var packages = await _installer.GetDownloadPlanAsync(card.Engine, dependencies, token);
-            if (packages.Count == 0) { await RefreshCoreAsync(token, card); ProgressText = "所需组件已经安装，设备信息已更新。"; return; }
+            if (packages.Count == 0) { await RefreshCoreAsync(token, card); ProgressText = "Required components are already installed; device info updated."; return; }
             if (!await _interaction.ConfirmDownloadAsync(packages, dependencies)) return;
             token.ThrowIfCancellationRequested();
             var progress = new Progress<RuntimeDownloadProgress>(p =>
@@ -381,7 +381,7 @@ public partial class HardwareAccelerationViewModel : ObservableObject, IViewMode
             // 安装、识别与按钮更新属于同一次操作，不能在 IsBusy 切换的间隙丢掉刷新。
             await RefreshCoreAsync(token, card);
             ProgressText = card.IsInstalled && card.SelectedDevice != null
-                ? $"{card.Name} 已就绪，点击“应用并重启”即可使用。"
+                ? $"{card.Name} is ready. Click 'Apply & Restart' to activate."
                 : card.ApplyBlockReason;
         });
     }
@@ -404,7 +404,7 @@ public partial class HardwareAccelerationViewModel : ObservableObject, IViewMode
             Results.Add(result);
             OnPropertyChanged(nameof(OcrResult)); OnPropertyChanged(nameof(TreeResult));
             OnPropertyChanged(nameof(HasOcrResult)); OnPropertyChanged(nameof(HasTreeResult));
-            ProgressText = "测速完成，结果来自当前生效配置。";
+            ProgressText = "Benchmark complete (using active configuration).";
         });
     }
 
@@ -418,14 +418,14 @@ public partial class HardwareAccelerationViewModel : ObservableObject, IViewMode
     private async Task ExecuteAsync(Func<CancellationToken, Task> action, CancellationTokenSource cancellation)
     {
         try { await action(cancellation.Token); }
-        catch (OperationCanceledException) { ProgressText = "操作已取消，已释放测试资源；下载进度保留供下次续传。"; }
-        catch (Exception e) { ProgressText = "操作失败：" + e.Message; ErrorDetails = e.ToString(); }
+        catch (OperationCanceledException) { ProgressText = "Operation cancelled; test resources released and download progress saved."; }
+        catch (Exception e) { ProgressText = "Operation failed: " + e.Message; ErrorDetails = e.ToString(); }
         finally
         {
             _operationCancellation = null; cancellation.Dispose(); IsBusy = false; IsProgressIndeterminate = false;
         }
     }
-    [RelayCommand] private void Cancel() { _operationCancellation?.Cancel(); ProgressText = "正在取消，等待当前操作安全结束…"; }
+    [RelayCommand] private void Cancel() { _operationCancellation?.Cancel(); ProgressText = "Cancelling, waiting for current operation to finish safely..."; }
 
     [RelayCommand]
     private void OpenRuntimeFolder()
@@ -435,7 +435,7 @@ public partial class HardwareAccelerationViewModel : ObservableObject, IViewMode
             Directory.CreateDirectory(_installer.PluginsDirectory);
             using var process = Process.Start("explorer.exe", _installer.PluginsDirectory);
         }
-        catch (Exception e) { ThemedMessageBox.Show($"无法打开运行库目录：{e.Message}", "打开目录失败"); }
+        catch (Exception e) { ThemedMessageBox.Show($"Failed to open runtime directory: {e.Message}", "Open Directory Failed"); }
     }
     [RelayCommand]
     public void OnOpenCacheFolder()

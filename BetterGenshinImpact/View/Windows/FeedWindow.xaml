@@ -39,14 +39,14 @@
                                   Margin="0,0,0,8"
                                   FontSize="16"
                                   FontWeight="SemiBold"
-                                  Text="{Binding Title}"
+                                  Text="{i18n:TValue Title}"
                                   TextWrapping="Wrap" />
 
                     <!-- 时间与有效期 -->
                     <StackPanel Grid.Row="1" Margin="0,0,0,6" Orientation="Horizontal">
                         <ui:TextBlock FontSize="12"
                                       Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                                      Text="{Binding Time}" />
+                                      Text="{i18n:TValue Time}" />
                         <ui:TextBlock Margin="8,0,8,0"
                                       FontSize="12"
                                       Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
@@ -83,7 +83,7 @@
                         <ui:TextBlock Margin="4,0,0,0"
                                       FontSize="12"
                                       Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                                      Text="{Binding Valid}">
+                                      Text="{i18n:TValue Valid}">
                             <ui:TextBlock.Style>
                                 <Style TargetType="{x:Type ui:TextBlock}">
                                     <Style.Triggers>
@@ -110,7 +110,7 @@
                                 CornerRadius="{DynamicResource ControlCornerRadius}">
                             <ui:TextBlock FontSize="14"
                                           LineHeight="20"
-                                          Text="{Binding Content}"
+                                          Text="{i18n:TValue Content}"
                                           TextWrapping="Wrap" />
                         </Border>
                     </StackPanel>
@@ -155,7 +155,7 @@
                             <ui:TextBlock VerticalAlignment="Center"
                                           FontSize="11"
                                           Foreground="White"
-                                          Text="{Binding Tag}" />
+                                          Text="{i18n:TValue Tag}" />
                         </Border>
                     </StackPanel>
 

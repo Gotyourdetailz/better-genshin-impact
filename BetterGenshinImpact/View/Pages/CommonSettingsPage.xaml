@@ -414,13 +414,13 @@
                                         <ui:TextBlock Grid.Row="0"
                                                       Grid.Column="0"
                                                       FontTypography="BodyStrong"
-                                                      Text="{Binding Name}"
+                                                      Text="{i18n:TValue Name}"
                                                       TextWrapping="Wrap" />
                                         <ui:TextBlock Grid.Row="1"
                                                       Grid.Column="0"
                                                       Margin="0,4,0,0"
                                                       Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                                                      Text="{Binding Description}"
+                                                      Text="{i18n:TValue Description}"
                                                       TextWrapping="Wrap" />
                                         <ui:ToggleSwitch Grid.Row="0"
                                                          Grid.RowSpan="2"
@@ -468,7 +468,7 @@
                                                               ToolTip="{Binding ToolTipText}">
                                                         <ui:TextBlock Margin="4,0,0,0"
                                                                       FontTypography="Body"
-                                                                      Text="{Binding DisplayName}"
+                                                                      Text="{i18n:TValue DisplayName}"
                                                                       TextTrimming="CharacterEllipsis"
                                                                       TextWrapping="NoWrap" />
                                                     </CheckBox>
@@ -491,12 +491,12 @@
                                                     <ui:TextBlock Grid.Row="0"
                                                                   Grid.Column="0"
                                                                   FontTypography="Body"
-                                                                  Text="{Binding DisplayName}"
+                                                                  Text="{i18n:TValue DisplayName}"
                                                                   TextWrapping="Wrap" />
                                                     <ui:TextBlock Grid.Row="1"
                                                                   Grid.Column="0"
                                                                   Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                                                                  Text="{Binding Description}"
+                                                                  Text="{i18n:TValue Description}"
                                                                   TextWrapping="Wrap" />
                                                     <ui:TextBox Grid.Row="0"
                                                                 Grid.RowSpan="2"
@@ -529,7 +529,7 @@
                                                                             BorderBrush="Gray"
                                                                             BorderThickness="1" />
                                                                     <TextBlock VerticalAlignment="Center"
-                                                                               Text="{Binding DisplayName}"
+                                                                               Text="{i18n:TValue DisplayName}"
                                                                                TextTrimming="CharacterEllipsis" />
                                                                 </StackPanel>
                                                             </DataTemplate>

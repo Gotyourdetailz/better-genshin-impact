@@ -4,5 +4,5 @@ namespace BetterGenshinImpact.ViewModel.Pages.OneDragon;
 
 public partial class CraftViewModel : OneDragonBaseViewModel
 {
-    public override string Title { get; } = "合成浓缩树脂";
+    public override string Title { get; } = "Craft Condensed Resin";
 }

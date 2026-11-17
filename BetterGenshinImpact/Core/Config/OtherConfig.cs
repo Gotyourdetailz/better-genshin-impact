@@ -121,12 +121,12 @@ public partial class OtherConfig : ObservableObject
     /// 游戏语言名称
     /// </summary>
     [ObservableProperty]
-    private string _gameCultureInfoName = "zh-Hans";
+    private string _gameCultureInfoName = "en";
 
     /// <summary>
     /// BGI界面语言名称
     /// </summary>
     [ObservableProperty]
-    private string _uiCultureInfoName = "zh-Hans";
+    private string _uiCultureInfoName = "en";
 
 }

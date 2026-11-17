@@ -57,7 +57,7 @@
                       TreeViewItem.Expanded="OnTreeItemExpanded">
                 <TreeView.ItemTemplate>
                     <HierarchicalDataTemplate ItemsSource="{Binding Children}">
-                        <TextBlock Text="{Binding Title}" TextWrapping="Wrap" />
+                        <TextBlock Text="{i18n:TValue Title}" TextWrapping="Wrap" />
                     </HierarchicalDataTemplate>
                 </TreeView.ItemTemplate>
             </TreeView>

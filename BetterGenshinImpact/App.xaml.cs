@@ -139,16 +139,11 @@ public partial class App : Application
 
                 services.AddLocalization();
                 var i18nService = I18nService.Instance;
-                var uiLanguage = all.OtherConfig.UiCultureInfoName switch
+                var uiLanguage = "en";
+                if (all.OtherConfig.UiCultureInfoName != "en" || all.OtherConfig.GameCultureInfoName != "en")
                 {
-                    "zh-CN" => "zh-Hans",
-                    "en-US" => "en",
-                    "ja-JP" => "ja",
-                    _ => all.OtherConfig.UiCultureInfoName,
-                };
-                if (uiLanguage != all.OtherConfig.UiCultureInfoName)
-                {
-                    all.OtherConfig.UiCultureInfoName = uiLanguage;
+                    all.OtherConfig.UiCultureInfoName = "en";
+                    all.OtherConfig.GameCultureInfoName = "en";
                     configService.Save();
                 }
 
@@ -273,7 +268,7 @@ public partial class App : Application
                 // Configuration
                 //services.Configure<AppConfig>(context.Configuration.GetSection(nameof(AppConfig)));
 
-                I18N.Culture = new CultureInfo("zh-Hans"); // #1846
+                I18N.Culture = new CultureInfo("en-US"); // #1846
             }
         )
         .Build();
@@ -333,7 +328,7 @@ public partial class App : Application
         catch (Exception ex)
         {
             Debug.WriteLine(ex);
-            ConsoleHelper.WriteError($"应用程序启动失败: {ex.Message}");
+            ConsoleHelper.WriteError($"Application startup failed: {ex.Message}");
 
             var dialogShown = false;
             try
@@ -345,7 +340,7 @@ public partial class App : Application
             catch (Exception ex2)
             {
                 Debug.WriteLine(ex2);
-                ConsoleHelper.WriteError($"应用程序启动失败打印日志时又失败了: {ex2.Message}");
+                ConsoleHelper.WriteError($"Failed to log startup failure: {ex2.Message}");
             }
 
             // 启动早期 WPF Dispatcher 可能尚未就绪，HandleException 可能因此不弹窗。
@@ -356,8 +351,8 @@ public partial class App : Application
                 try
                 {
                     System.Windows.Forms.MessageBox.Show(
-                        $"应用程序启动失败：{ex.Message}",
-                        "BetterGI 启动失败",
+                        $"Application startup failed: {ex.Message}",
+                        "BetterGI Startup Failed",
                         System.Windows.Forms.MessageBoxButtons.OK,
                         System.Windows.Forms.MessageBoxIcon.Error);
                 }

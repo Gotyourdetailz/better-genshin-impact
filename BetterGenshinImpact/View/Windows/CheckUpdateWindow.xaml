@@ -33,7 +33,7 @@
                      Visibility="{Binding ShowUpdateStatus, Converter={StaticResource BooleanToVisibilityConverter}}">
                 <vio:Loading Grid.Column="0" />
                 <ui:StackPanel Grid.Column="1" Margin="16,0,0,0">
-                    <TextBlock Text="{Binding UpdateStatusMessage}" />
+                    <TextBlock Text="{i18n:TValue UpdateStatusMessage}" />
                 </ui:StackPanel>
             </ui:Grid>
             <!-- 新增：多渠道更新方式卡片 -->
@@ -56,7 +56,7 @@
                             <ui:TextBlock Grid.Row="1"
                                           Grid.Column="0"
                                           Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                                          Text="{Binding GitSourceDescription}"
+                                          Text="{i18n:TValue GitSourceDescription}"
                                           TextWrapping="Wrap" />
                         </Grid>
                     </ui:CardControl.Header>

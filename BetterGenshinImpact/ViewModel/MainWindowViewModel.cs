@@ -55,7 +55,7 @@ public partial class MainWindowViewModel : ObservableObject, IViewModel
     private readonly IInferenceModelDiagnostics _inferenceDiagnostics;
     private readonly InferenceRuntimeService _inferenceRuntime;
     private bool _inferenceStartupHandled;
-    public string Title => $"BetterGI · 更好的原神 · {Global.Version}{(RuntimeHelper.IsDebug ? " · Dev" : string.Empty)}";
+    public string Title => $"BetterGI · Better Genshin Impact · {Global.Version}{(RuntimeHelper.IsDebug ? " · Dev" : string.Empty)}";
     public bool IsChildSessionInstance =>
         InstanceBootstrap.Current.Context.InstanceType == BetterGiInstanceType.ChildSession;
 
@@ -329,8 +329,8 @@ public partial class MainWindowViewModel : ObservableObject, IViewModel
         {
             e.Cancel = true;
             ThemedMessageBox.Warning(
-                "桌面分身仍在运行，请先关闭桌面分身，再关闭主窗口。",
-                "桌面分身未关闭");
+                "Child session is still running. Please close the child session before closing the main window.",
+                "Child Session Still Running");
             return;
         }
 
@@ -541,7 +541,7 @@ public partial class MainWindowViewModel : ObservableObject, IViewModel
             // 低版本才需要迁移
             if (fileVersionInfo.FileVersion != null && !Global.IsNewVersion(fileVersionInfo.FileVersion))
             {
-                var res = await ThemedMessageBox.ShowAsync("检测到旧的 BetterGI 配置，是否迁移配置并清理旧目录？", "BetterGI",
+                var res = await ThemedMessageBox.ShowAsync("Legacy BetterGI configuration detected. Migrate configuration and clean up the old directory?", "BetterGI",
                     System.Windows.MessageBoxButton.YesNo, ThemedMessageBox.MessageBoxIcon.Question);
                 if (res == System.Windows.MessageBoxResult.Yes)
                 {
@@ -549,7 +549,7 @@ public partial class MainWindowViewModel : ObservableObject, IViewModel
                     DirectoryHelper.CopyDirectory(embeddedUserPath, Global.Absolute("User"));
                     // 删除旧目录
                     DirectoryHelper.DeleteReadOnlyDirectory(embeddedPath);
-                    await ThemedMessageBox.InformationAsync("迁移配置成功, 软件将自动退出，请手动重新启动 BetterGI！");
+                    await ThemedMessageBox.InformationAsync("Configuration migrated successfully! BetterGI will now exit. Please restart BetterGI manually.");
                     Application.Current.Shutdown();
                 }
             }
@@ -593,8 +593,8 @@ public partial class MainWindowViewModel : ObservableObject, IViewModel
             // 这是主窗口加载后的友好提示，不应让验证流程异常阻止软件继续使用。
             _logger.LogWarning(e, "推理引擎启动验证未完成");
             if (!_inferenceRuntime.IsStopping)
-                await ThemedMessageBox.WarningAsync("推理引擎验证未能正常完成。\r\n\r\n" +
-                                                    "软件可以继续使用；详细错误已写入日志，请在首页的“硬件加速设置”中重新检测后再试。");
+                await ThemedMessageBox.WarningAsync("Inference engine validation did not complete normally.\r\n\r\n" +
+                                                    "You can continue using the software; detailed errors have been written to the log. Please re-detect in 'Hardware Acceleration Settings' on the Home page.");
         }
     }
 

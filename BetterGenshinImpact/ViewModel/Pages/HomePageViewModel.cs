@@ -686,7 +686,7 @@ public partial class HomePageViewModel : ViewModel, IDisposable
         var viewModel = _hardwareAccelerationFactory.Create();
         var dialogWindow = new FluentWindow
         {
-            Title = "推理引擎设置",
+            Title = "Inference Engine Settings",
             Content = new HardwareAccelerationView(viewModel),
             // 引擎卡片一行两张（卡片 300 + 间距 12），额外留出一些横向空间，避免卡片内容显得拥挤。
             Width = 1000,
@@ -717,9 +717,9 @@ public partial class HomePageViewModel : ViewModel, IDisposable
     {
         get
         {
-            var text = _inferenceRuntime.IsReady ? _inferenceRuntime.Current.Description : "推理初始化中";
+            var text = _inferenceRuntime.IsReady ? _inferenceRuntime.Current.Description : "Initializing inference...";
             return _inferenceRuntime.HasPendingRestart
-                ? text + "（设置已保存，待重启验证）" : text;
+                ? text + " (Settings saved, restart required)" : text;
         }
     }
 

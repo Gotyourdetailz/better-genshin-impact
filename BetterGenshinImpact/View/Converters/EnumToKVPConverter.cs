@@ -6,6 +6,7 @@ using System.Windows;
 using System.ComponentModel;
 using System.Globalization;
 using System.Reflection;
+using BetterGenshinImpact.Service.I18n;
 
 namespace BetterGenshinImpact.View.Converters;
 
@@ -29,7 +30,7 @@ public class EnumToKVPConverter : IValueConverter
         var field = enumType.GetField(name);
         var descriptionAttribute = field?.GetCustomAttribute<DescriptionAttribute>();
 
-        var description = descriptionAttribute != null ? descriptionAttribute.Description : name;
+        var description = descriptionAttribute != null ? I18nService.Instance.Translate(descriptionAttribute.Description) : name;
         return new KeyValuePair<Enum, string>((Enum)value, description);
     }
 

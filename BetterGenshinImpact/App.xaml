@@ -3,6 +3,8 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:behavior="clr-namespace:BetterGenshinImpact.View.Behavior"
              xmlns:bgivc="clr-namespace:BetterGenshinImpact.View.Converters"
+             xmlns:i18n="clr-namespace:BetterGenshinImpact.Service.I18n"
+             xmlns:sys="clr-namespace:System;assembly=System.Runtime"
              xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
              xmlns:vio="http://schemas.lepo.co/wpfui/2022/xaml/violeta">
     <Application.Resources>
@@ -15,6 +17,13 @@
                 <ResourceDictionary Source="/View/Controls/Drawer/DrawerStyles.xaml" />
                 <ResourceDictionary Source="/View/Controls/Markdown/Resources/MarkdownStyles.xaml" />
             </ResourceDictionary.MergedDictionaries>
+
+            <DataTemplate DataType="{x:Type sys:String}">
+                <TextBlock Text="{i18n:TValue}" />
+            </DataTemplate>
+            <DataTemplate x:Key="LocalizedStringItemTemplate">
+                <TextBlock Text="{i18n:TValue}" />
+            </DataTemplate>
 
             <!-- ===== 字体 ===== -->
             <FontFamily x:Key="TextThemeFontFamily">/Resources/Fonts/MiSans-Regular.ttf#MiSans</FontFamily>

@@ -407,14 +407,14 @@
                             <TextBlock FontSize="21"
                                        FontWeight="SemiBold"
                                        Foreground="White"
-                                       Text="{Binding ConnectionStatusTitle}" />
+                                       Text="{i18n:TValue ConnectionStatusTitle}" />
                         </StackPanel>
 
                         <TextBlock MaxWidth="510"
                                    Margin="0,10,0,0"
                                    HorizontalAlignment="Center"
                                    Foreground="#BFFFFFFF"
-                                   Text="{Binding ConnectionStatusDescription}"
+                                   Text="{i18n:TValue ConnectionStatusDescription}"
                                    TextAlignment="Center"
                                    TextWrapping="Wrap" />
 
@@ -426,14 +426,14 @@
                                 CornerRadius="7">
                             <StackPanel>
                                 <TextBlock Foreground="#E6FFFFFF"
-                                           Text="{Binding RdpStatusText}" />
+                                           Text="{i18n:TValue RdpStatusText}" />
                                 <TextBlock Margin="0,5,0,0"
                                            Foreground="#99FFFFFF"
-                                           Text="{Binding ChildSessionStatusText}" />
+                                           Text="{i18n:TValue ChildSessionStatusText}" />
                                 <TextBlock Margin="0,8,0,0"
                                            Foreground="#70FFFFFF"
                                            FontSize="11"
-                                           Text="{Binding ConnectionStatusToolTip}"
+                                           Text="{i18n:TValue ConnectionStatusToolTip}"
                                            TextWrapping="Wrap" />
                             </StackPanel>
                         </Border>

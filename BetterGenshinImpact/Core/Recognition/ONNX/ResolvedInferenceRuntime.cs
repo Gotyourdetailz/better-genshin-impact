@@ -18,10 +18,10 @@ public sealed record ResolvedInferenceRuntime(
     int CpuThreads, bool EnableModelCache, string RuntimeDirectory)
 {
     public PaddleOcrCpuOptions PaddleOcrCpu { get; init; } = new();
-    public static InferenceDeviceInfo CpuDevice { get; } = new("CPU", "处理器", 0, "CPU");
+    public static InferenceDeviceInfo CpuDevice { get; } = new("CPU", "Processor", 0, "CPU");
     public static string ModelCacheDirectory => Global.Absolute(Path.Combine("Cache", "Inference"));
     public string Description => $"{(Engine == InferenceDeviceType.Cpu ? "CPU" : Engine.ToString())} · {Device.Name}";
-    public string OcrDescription => (CpuOcr ? "CPU（强制 OCR 使用 CPU）" : Description)
+    public string OcrDescription => (CpuOcr ? "CPU (Force CPU for OCR)" : Description)
         + (CpuOcr || Engine == InferenceDeviceType.Cpu ? " · " + PaddleOcrCpu.Describe(CpuThreads) : "");
     public string Fingerprint => InferenceRuntimeFingerprint.Compute(Engine, Device.Id, CpuOcr, CpuThreads,
         EnableModelCache, PaddleOcrCpu);

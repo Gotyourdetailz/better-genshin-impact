@@ -233,7 +233,7 @@
                                     </StackPanel.Resources>
                                     <TextBlock FontFamily="{StaticResource FgiIconFontFamily}"
                                                Opacity="{Binding DataContext.Config.MaskWindowConfig.TextOpacity, RelativeSource={RelativeSource AncestorType=Window}}"
-                                               Text="{Binding LocalizedName}">
+                                               Text="{i18n:TValue LocalizedName}">
                                         <TextBlock.FontSize>
                                             <MultiBinding Converter="{StaticResource OverlayScaledSizeConverter}">
                                                 <Binding Path="DataContext.Config.MaskWindowConfig.StatusFontSize" RelativeSource="{RelativeSource AncestorType=Window}" />
@@ -472,7 +472,7 @@
                                     <TextBlock Grid.Column="0"
                                                FontFamily="{Binding DataContext.Config.MaskWindowConfig.MetricsFontFamily, RelativeSource={RelativeSource AncestorType=Window}}"
                                                Foreground="{Binding DataContext.Config.MaskWindowConfig.MetricsTextColor, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource ColorStringToBrushConverter}, ConverterParameter=LightGray}"
-                                               Text="{Binding Name}"
+                                               Text="{i18n:TValue Name}"
                                                TextWrapping="NoWrap">
                                         <TextBlock.FontSize>
                                             <MultiBinding Converter="{StaticResource OverlayScaledSizeConverter}">
@@ -496,7 +496,7 @@
                                     <TextBlock Grid.Column="1"
                                                FontFamily="{Binding DataContext.Config.MaskWindowConfig.MetricsFontFamily, RelativeSource={RelativeSource AncestorType=Window}}"
                                                Foreground="{Binding DataContext.Config.MaskWindowConfig.MetricsTextColor, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource ColorStringToBrushConverter}, ConverterParameter=LightGray}"
-                                               Text="{Binding Value}"
+                                               Text="{i18n:TValue Value}"
                                                TextTrimming="CharacterEllipsis"
                                                TextWrapping="NoWrap">
                                         <TextBlock.FontSize>
@@ -667,7 +667,7 @@
                 <TextBlock HorizontalAlignment="Center"
                            VerticalAlignment="Center"
                            FontFamily="{StaticResource DigitalThemeFontFamily}"
-                           Text="{Binding Fps}">
+                           Text="{i18n:TValue Fps}">
                     <TextBlock.FontSize>
                         <MultiBinding Converter="{StaticResource OverlayScaledSizeConverter}">
                             <Binding Source="{StaticResource FpsBaseFontSize}" />
@@ -738,7 +738,7 @@
                         <ui:ProgressRing Width="18" Height="18" IsIndeterminate="True" Margin="0,0,10,0" />
                         <TextBlock Foreground="White"
                                    FontSize="13"
-                                   Text="{Binding MapPointsLoadingText}" />
+                                   Text="{i18n:TValue MapPointsLoadingText}" />
                     </StackPanel>
                 </Border>
             </Grid>
@@ -776,7 +776,7 @@
                                        FontSize="14"
                                        FontWeight="SemiBold"
                                        Foreground="White"
-                                       Text="{Binding Title}"
+                                       Text="{i18n:TValue Title}"
                                        TextTrimming="CharacterEllipsis" />
                             <ui:Button Grid.Column="1"
                                        MinWidth="58"
@@ -828,7 +828,7 @@
                                        Foreground="#B3FFFFFF"
                                        TextWrapping="Wrap"
                                        Visibility="{Binding TextError, Converter={StaticResource BooleanToVisibilityRevertConverter}}"
-                                       Text="{Binding TextError}" />
+                                       Text="{i18n:TValue TextError}" />
 
                             <ItemsControl Margin="0,8,0,0"
                                           ItemsSource="{Binding UrlList}"
@@ -860,7 +860,7 @@
                                                     </Border>
                                                 </ControlTemplate>
                                             </Button.Template>
-                                            <TextBlock Foreground="White" FontSize="12" Text="{Binding DisplayText}" />
+                                            <TextBlock Foreground="White" FontSize="12" Text="{i18n:TValue DisplayText}" />
                                         </Button>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
@@ -920,7 +920,7 @@
                                                Foreground="#B3FFFFFF"
                                                TextWrapping="Wrap"
                                                Visibility="{Binding ImageError, Converter={StaticResource BooleanToVisibilityRevertConverter}}"
-                                               Text="{Binding ImageError}" />
+                                               Text="{i18n:TValue ImageError}" />
                                 </Grid>
                             </Border>
 
@@ -943,7 +943,7 @@
                                     </Style>
                                 </ScrollViewer.Style>
                                 <TextBlock Foreground="#E6FFFFFF"
-                                           Text="{Binding Text}"
+                                           Text="{i18n:TValue Text}"
                                            TextWrapping="Wrap" />
                             </ScrollViewer>
                         </StackPanel>
@@ -1100,7 +1100,7 @@
                                                            Margin="0,0,8,0"
                                                            Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"
                                                            ToolTip="{i18n:T 当前显示/全部标点}"
-                                                           Text="{Binding MapPointVisibilitySummary}" />
+                                                           Text="{i18n:TValue MapPointVisibilitySummary}" />
                                                 <ui:Button Width="32"
                                                            Height="32"
                                                            Margin="0,0,6,0"
@@ -1160,7 +1160,7 @@
                                                                     Padding="6,6"
                                                                     Background="Transparent">
                                                                 <TextBlock Foreground="White"
-                                                                           Text="{Binding Name}"
+                                                                           Text="{i18n:TValue Name}"
                                                                            TextTrimming="CharacterEllipsis" />
                                                             </Border>
                                                         </DataTemplate>
@@ -1229,13 +1229,13 @@
                                                                                        HorizontalAlignment="Right"
                                                                                        TextAlignment="Right"
                                                                                        Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"
-                                                                                       Text="{Binding PointCount}" />
+                                                                                       Text="{i18n:TValue PointCount}" />
 
                                                                             <TextBlock VerticalAlignment="Center"
                                                                                        Foreground="White"
                                                                                        HorizontalAlignment="Stretch"
                                                                                        TextAlignment="Left"
-                                                                                       Text="{Binding Name}"
+                                                                                       Text="{i18n:TValue Name}"
                                                                                        TextTrimming="CharacterEllipsis" />
                                                                         </DockPanel>
                                                                     </Button>

@@ -289,7 +289,7 @@
                                        VerticalAlignment="Center"
                                        FontSize="12"
                                        Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                       Text="{Binding ViewModel.GuidedStatusText}"
+                                       Text="{i18n:TValue ViewModel.GuidedStatusText}"
                                        Visibility="{Binding ViewModel.IsGuidedPlaying, Converter={StaticResource BooleanToVisibilityConverter}}" />
                         </StackPanel>
                     </Grid>
@@ -404,7 +404,7 @@
                                                         VerticalAlignment="Center">
                                                 <TextBlock FontSize="14"
                                                            FontWeight="SemiBold"
-                                                           Text="{Binding DisplayTitle}"
+                                                           Text="{i18n:TValue DisplayTitle}"
                                                            TextTrimming="CharacterEllipsis" />
                                                 <TextBlock Margin="0,2,0,0"
                                                            FontSize="12"
@@ -423,7 +423,7 @@
                                                         VerticalAlignment="Center">
                                                 <TextBlock HorizontalAlignment="Right"
                                                            FontWeight="SemiBold"
-                                                           Text="{Binding DurationText}" />
+                                                           Text="{i18n:TValue DurationText}" />
                                                 <TextBlock x:Name="TrackStatusText"
                                                            Margin="0,2,0,0"
                                                            HorizontalAlignment="Right"
@@ -502,7 +502,7 @@
                                            HorizontalAlignment="Center"
                                            TextAlignment="Center"
                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                           Text="{Binding ViewModel.LibraryStatusText}"
+                                           Text="{i18n:TValue ViewModel.LibraryStatusText}"
                                            TextWrapping="Wrap" />
                             </StackPanel>
                         </Border>
@@ -548,13 +548,13 @@
                     <TextBlock VerticalAlignment="Center"
                                FontSize="12"
                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                               Text="{Binding ViewModel.CurrentTimeText}" />
+                               Text="{i18n:TValue ViewModel.CurrentTimeText}" />
                     <TextBlock Grid.Column="2"
                                HorizontalAlignment="Right"
                                VerticalAlignment="Center"
                                FontSize="12"
                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                               Text="{Binding ViewModel.TotalTimeText}" />
+                               Text="{i18n:TValue ViewModel.TotalTimeText}" />
                 </Grid>
 
                 <Grid Grid.Row="1" Margin="20,7,20,14">
@@ -601,7 +601,7 @@
                             <TextBlock MaxWidth="260"
                                        FontSize="15"
                                        FontWeight="SemiBold"
-                                       Text="{Binding ViewModel.CurrentTrackName}"
+                                       Text="{i18n:TValue ViewModel.CurrentTrackName}"
                                        TextTrimming="CharacterEllipsis" />
                             <TextBlock Margin="0,4,0,0"
                                        FontSize="12"
@@ -669,7 +669,7 @@
                                    Margin="0,0,7,0"
                                    VerticalAlignment="Center"
                                    FontSize="12"
-                                   Text="{Binding ViewModel.InputModeDisplayText}" />
+                                   Text="{i18n:TValue ViewModel.InputModeDisplayText}" />
                         <ui:ToggleSwitch VerticalAlignment="Center"
                                          IsChecked="{Binding ViewModel.UseBackgroundInput, Mode=TwoWay}"
                                          ToolTip="{Binding ViewModel.InputModeToolTip}" />

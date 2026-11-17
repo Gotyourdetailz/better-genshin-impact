@@ -1,5 +1,6 @@
 ﻿using BetterGenshinImpact.Core.Config;
 using BetterGenshinImpact.Model;
+using BetterGenshinImpact.Service.I18n;
 using CommunityToolkit.Mvvm.ComponentModel;
 using System;
 using System.Collections.Generic;
@@ -36,12 +37,12 @@ public partial class KeyBindingSettingModel:ObservableObject
     public KeyBindingSettingModel(string name)
     {
         IsDirectory = true;
-        ActionName = name;
+        ActionName = I18nService.Instance.Translate(name);
     }
 
     public KeyBindingSettingModel(string actionName,  string configPropertyName, KeyId keyValue)
     {
-        ActionName = actionName;
+        ActionName = I18nService.Instance.Translate(actionName);
         ConfigPropertyName = configPropertyName;
         KeyValue = keyValue;
         IsDirectory = false;

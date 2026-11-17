@@ -64,9 +64,9 @@ public partial class CommonSettingsPageViewModel : ViewModel
     
     [ObservableProperty] private List<Tuple<TimeSpan, string>> _serverTimeZones =
     [
-        Tuple.Create(TimeSpan.FromHours(8), "其他 UTC+08"),
-        Tuple.Create(TimeSpan.FromHours(1), "欧服 UTC+01"),
-        Tuple.Create(TimeSpan.FromHours(-5), "美服 UTC-05")
+        Tuple.Create(TimeSpan.FromHours(8), "Asia / CN / TW (UTC+08)"),
+        Tuple.Create(TimeSpan.FromHours(1), "Europe (UTC+01)"),
+        Tuple.Create(TimeSpan.FromHours(-5), "America (UTC-05)")
     ];
 
     public IReadOnlyDictionary<ItemIconRecognitionMode, string> ItemIconRecognitionModes { get; } =
@@ -108,7 +108,7 @@ public partial class CommonSettingsPageViewModel : ViewModel
     public ObservableCollection<string> MapPathingTypes { get; } = ["SIFT", "TemplateMatch"];
 
     [ObservableProperty] private FrozenDictionary<string, string> _languageDict =
-        new[] { "zh-Hans", "zh-Hant", "en", "ja", "ru", "it"  }
+        new[] { "en" }
             .ToFrozenDictionary(c => c, c => CultureInfoNameToKVPConverter.GetDisplayName(c));
 
     public string SelectedCountry
@@ -147,7 +147,7 @@ public partial class CommonSettingsPageViewModel : ViewModel
         //            Owner = this,
         WebpageWindow cookieWin = new()
         {
-            Title = "日志分析",
+            Title = "Log Analysis",
             Width = 800,
             Height = 600,
 
@@ -354,7 +354,7 @@ public partial class CommonSettingsPageViewModel : ViewModel
 
         var dialog = new OpenFileDialog
         {
-            Title = "选择脚本仓库压缩包",
+            Title = "Select Script Repository Archive",
             Filter = "Zip Files (*.zip)|*.zip",
             Multiselect = false
         };
@@ -364,11 +364,11 @@ public partial class CommonSettingsPageViewModel : ViewModel
             try
             {
                 await ScriptRepoUpdater.Instance.ImportLocalRepoZip(dialog.FileName);
-                ThemedMessageBox.Information("脚本仓库离线包导入成功！");
+                ThemedMessageBox.Information("Offline script repository imported successfully!");
             }
             catch (Exception ex)
             {
-                ThemedMessageBox.Error($"脚本仓库离线包导入失败：{ex.Message}");
+                ThemedMessageBox.Error($"Failed to import offline script repository: {ex.Message}");
             }
         }
     }
@@ -403,7 +403,7 @@ public partial class CommonSettingsPageViewModel : ViewModel
     [RelayCommand]
     private async Task CheckUpdateAlphaAsync()
     {
-        var result = await ThemedMessageBox.ShowAsync("测试版本非常不稳定！\n测试版本非常不稳定！\n测试版本非常不稳定！\n\n是否继续检查更新？", "警告", MessageBoxButton.YesNo, ThemedMessageBox.MessageBoxIcon.Warning);
+        var result = await ThemedMessageBox.ShowAsync("Beta builds can be unstable!\n\nDo you want to continue checking for updates?", "Warning", MessageBoxButton.YesNo, ThemedMessageBox.MessageBoxIcon.Warning);
         if (result != MessageBoxResult.Yes)
         {
             return;
@@ -426,13 +426,8 @@ public partial class CommonSettingsPageViewModel : ViewModel
     [RelayCommand]
     private void OnUiLanguageSelectionChanged(object? value)
     {
-        if (value is not KeyValuePair<string, string> language)
-        {
-            return;
-        }
-
-        Config.OtherConfig.UiCultureInfoName = language.Key;
-        _i18nService.ChangeLanguage(language.Key);
+        Config.OtherConfig.UiCultureInfoName = "en";
+        _i18nService.ChangeLanguage("en");
         _configService.Save();
     }
 
@@ -454,8 +449,8 @@ public partial class CommonSettingsPageViewModel : ViewModel
     {
         var dialog = new OpenFileDialog
         {
-            Filter = "图片文件|*.png;*.jpg;*.jpeg;*.bmp;*.gif",
-            Title = "选择准星图片"
+            Filter = "Image Files|*.png;*.jpg;*.jpeg;*.bmp;*.gif",
+            Title = "Select Crosshair Image"
         };
         if (dialog.ShowDialog() == true)
         {
@@ -469,8 +464,8 @@ public partial class CommonSettingsPageViewModel : ViewModel
         var dialog = new OpenFileDialog
         {
             // 注意：不声明 *.webp —— WPF BitmapImage 原生不支持 WebP 解码，声明了会导致用户选中后加载失败
-            Filter = "图片文件|*.png;*.jpg;*.jpeg;*.bmp;*.gif",
-            Title = "选择主窗口背景图片"
+            Filter = "Image Files|*.png;*.jpg;*.jpeg;*.bmp;*.gif",
+            Title = "Select Main Window Background Image"
         };
         if (dialog.ShowDialog() == true)
         {
@@ -564,79 +559,79 @@ public sealed class OverlayStyleSettingGroup : ObservableObject
     {
         return
         [
-            new OverlayStyleSettingGroup("全局遮罩配置", "控制整个遮罩窗口的通用显示效果。", OverlayStyleSettingGroupKind.Global, CreateGlobalItems(config, onChanged)),
-            new OverlayStyleSettingGroup("日志遮罩", "显示运行日志，方便查看当前任务执行到哪一步。", OverlayStyleSettingGroupKind.Log, [
-                OverlayStyleSettingItem.Color(config, nameof(MaskWindowConfig.LogPanelBackgroundColor), "日志区域背景色", "日志窗口底色。", onChanged),
-                OverlayStyleSettingItem.Color(config, nameof(MaskWindowConfig.LogPanelBorderColor), "日志区域边框颜色", "日志窗口边框颜色。边框粗细为 0 时不会显示边框。", onChanged),
-                OverlayStyleSettingItem.Number(config, nameof(MaskWindowConfig.LogPanelBorderThickness), "日志区域边框粗细", "日志窗口边框线宽。填 0 表示不显示边框。", onChanged),
-                OverlayStyleSettingItem.Color(config, nameof(MaskWindowConfig.LogTextColor), "日志文字颜色", "日志内容的文字颜色。", onChanged),
-                OverlayStyleSettingItem.Number(config, nameof(MaskWindowConfig.LogFontSize), "日志文字大小", "日志内容字号。", onChanged),
-                OverlayStyleSettingItem.Bool(config, nameof(MaskWindowConfig.LogShadowEnabled), "显示日志阴影", "开启后文字和区域更容易从游戏背景中区分出来。", onChanged),
-                OverlayStyleSettingItem.Color(config, nameof(MaskWindowConfig.LogShadowColor), "日志阴影颜色", "日志阴影颜色。", onChanged),
-                OverlayStyleSettingItem.Number(config, nameof(MaskWindowConfig.LogShadowOpacity), "日志阴影透明度", "日志阴影强度，0 表示没有阴影，1 表示最明显。", onChanged),
-                OverlayStyleSettingItem.Number(config, nameof(MaskWindowConfig.LogShadowBlurRadius), "日志阴影模糊半径", "日志阴影的扩散范围，数值越大阴影越柔和。", onChanged),
+            new OverlayStyleSettingGroup("Global Overlay Settings", "Controls the general display behavior of the entire overlay window.", OverlayStyleSettingGroupKind.Global, CreateGlobalItems(config, onChanged)),
+            new OverlayStyleSettingGroup("Log Overlay", "Displays runtime logs so you can see the current step of running tasks.", OverlayStyleSettingGroupKind.Log, [
+                OverlayStyleSettingItem.Color(config, nameof(MaskWindowConfig.LogPanelBackgroundColor), "Log Panel Background Color", "Background color of the log panel.", onChanged),
+                OverlayStyleSettingItem.Color(config, nameof(MaskWindowConfig.LogPanelBorderColor), "Log Panel Border Color", "Border color of the log panel (hidden when thickness is 0).", onChanged),
+                OverlayStyleSettingItem.Number(config, nameof(MaskWindowConfig.LogPanelBorderThickness), "Log Panel Border Thickness", "Border width of the log panel (0 hides the border).", onChanged),
+                OverlayStyleSettingItem.Color(config, nameof(MaskWindowConfig.LogTextColor), "Log Text Color", "Text color of log entries.", onChanged),
+                OverlayStyleSettingItem.Number(config, nameof(MaskWindowConfig.LogFontSize), "Log Font Size", "Font size of log entries.", onChanged),
+                OverlayStyleSettingItem.Bool(config, nameof(MaskWindowConfig.LogShadowEnabled), "Show Log Drop Shadow", "Makes log text and panel easier to read against the game background.", onChanged),
+                OverlayStyleSettingItem.Color(config, nameof(MaskWindowConfig.LogShadowColor), "Log Shadow Color", "Color of the log drop shadow.", onChanged),
+                OverlayStyleSettingItem.Number(config, nameof(MaskWindowConfig.LogShadowOpacity), "Log Shadow Opacity", "Shadow intensity (0 = none, 1 = strongest).", onChanged),
+                OverlayStyleSettingItem.Number(config, nameof(MaskWindowConfig.LogShadowBlurRadius), "Log Shadow Blur Radius", "Shadow spread radius (higher values produce a softer shadow).", onChanged),
             ], config, nameof(MaskWindowConfig.ShowLogBox), onChanged),
-            new OverlayStyleSettingGroup("状态遮罩", "显示实时任务的启用状态，用来快速确认当前有哪些功能正在工作。", OverlayStyleSettingGroupKind.Status, [
-                OverlayStyleSettingItem.Color(config, nameof(MaskWindowConfig.StatusPanelBackgroundColor), "任务状态栏背景色", "状态栏底色。", onChanged),
-                OverlayStyleSettingItem.Color(config, nameof(MaskWindowConfig.StatusPanelBorderColor), "任务状态栏边框颜色", "状态栏边框颜色。边框粗细为 0 时不会显示边框。", onChanged),
-                OverlayStyleSettingItem.Number(config, nameof(MaskWindowConfig.StatusPanelBorderThickness), "任务状态栏边框粗细", "状态栏边框线宽。填 0 表示不显示边框。", onChanged),
-                OverlayStyleSettingItem.Color(config, nameof(MaskWindowConfig.StatusDisabledTextColor), "未启用状态文字颜色", "任务未启用时图标和文字的颜色。", onChanged),
-                OverlayStyleSettingItem.Color(config, nameof(MaskWindowConfig.StatusEnabledTextColor), "已启用状态文字颜色", "任务启用时图标和文字的颜色。", onChanged),
-                OverlayStyleSettingItem.Number(config, nameof(MaskWindowConfig.StatusFontSize), "状态文字大小", "状态栏字号。", onChanged),
-                OverlayStyleSettingItem.Bool(config, nameof(MaskWindowConfig.StatusShadowEnabled), "显示状态栏阴影", "开启后状态栏在复杂背景上更容易看清。", onChanged),
-                OverlayStyleSettingItem.Color(config, nameof(MaskWindowConfig.StatusShadowColor), "状态栏阴影颜色", "状态栏阴影颜色。", onChanged),
-                OverlayStyleSettingItem.Number(config, nameof(MaskWindowConfig.StatusShadowOpacity), "状态栏阴影透明度", "状态栏阴影强度，0 表示没有阴影，1 表示最明显。", onChanged),
-                OverlayStyleSettingItem.Number(config, nameof(MaskWindowConfig.StatusShadowBlurRadius), "状态栏阴影模糊半径", "状态栏阴影的扩散范围，数值越大阴影越柔和。", onChanged),
+            new OverlayStyleSettingGroup("Status Overlay", "Displays the active status of real-time triggers.", OverlayStyleSettingGroupKind.Status, [
+                OverlayStyleSettingItem.Color(config, nameof(MaskWindowConfig.StatusPanelBackgroundColor), "Status Bar Background Color", "Background color of the status bar.", onChanged),
+                OverlayStyleSettingItem.Color(config, nameof(MaskWindowConfig.StatusPanelBorderColor), "Status Bar Border Color", "Border color of the status bar (hidden when thickness is 0).", onChanged),
+                OverlayStyleSettingItem.Number(config, nameof(MaskWindowConfig.StatusPanelBorderThickness), "Status Bar Border Thickness", "Border width of the status bar (0 hides the border).", onChanged),
+                OverlayStyleSettingItem.Color(config, nameof(MaskWindowConfig.StatusDisabledTextColor), "Disabled Status Text Color", "Icon and text color when a trigger is disabled.", onChanged),
+                OverlayStyleSettingItem.Color(config, nameof(MaskWindowConfig.StatusEnabledTextColor), "Enabled Status Text Color", "Icon and text color when a trigger is enabled.", onChanged),
+                OverlayStyleSettingItem.Number(config, nameof(MaskWindowConfig.StatusFontSize), "Status Font Size", "Font size of the status bar.", onChanged),
+                OverlayStyleSettingItem.Bool(config, nameof(MaskWindowConfig.StatusShadowEnabled), "Show Status Bar Shadow", "Makes the status bar easier to read over complex backgrounds.", onChanged),
+                OverlayStyleSettingItem.Color(config, nameof(MaskWindowConfig.StatusShadowColor), "Status Bar Shadow Color", "Color of the status bar shadow.", onChanged),
+                OverlayStyleSettingItem.Number(config, nameof(MaskWindowConfig.StatusShadowOpacity), "Status Bar Shadow Opacity", "Shadow intensity (0 = none, 1 = strongest).", onChanged),
+                OverlayStyleSettingItem.Number(config, nameof(MaskWindowConfig.StatusShadowBlurRadius), "Status Bar Shadow Blur Radius", "Shadow spread radius (higher values produce a softer shadow).", onChanged),
             ], config, nameof(MaskWindowConfig.ShowStatus), onChanged),
-            new OverlayStyleSettingGroup("性能指标遮罩", "显示帧率、处理耗时和硬件占用等运行指标。", OverlayStyleSettingGroupKind.Metrics, [
-                OverlayStyleSettingItem.Color(config, nameof(MaskWindowConfig.MetricsPanelBackgroundColor), "指标栏背景色", "指标栏底色。", onChanged),
-                OverlayStyleSettingItem.Color(config, nameof(MaskWindowConfig.MetricsPanelBorderColor), "指标栏边框颜色", "指标栏边框颜色。边框粗细为 0 时不会显示边框。", onChanged),
-                OverlayStyleSettingItem.Number(config, nameof(MaskWindowConfig.MetricsPanelBorderThickness), "指标栏边框粗细", "指标栏边框线宽。填 0 表示不显示边框。", onChanged),
-                OverlayStyleSettingItem.Color(config, nameof(MaskWindowConfig.MetricsTextColor), "指标文字颜色", "指标文字颜色。", onChanged),
-                OverlayStyleSettingItem.Slider(config, nameof(MaskWindowConfig.MetricsFontScale), "指标栏缩放率", "启用遮罩缩放后，在指标字号和布局尺寸的基础上叠加缩放，范围为 0.5-3.0 倍。", MaskWindowConfig.MinLogFontScale, MaskWindowConfig.MaxLogFontScale, 0.1, onChanged),
-                OverlayStyleSettingItem.Number(config, nameof(MaskWindowConfig.MetricsFontSize), "指标文字大小", "指标栏字号。", onChanged),
-                OverlayStyleSettingItem.Number(config, nameof(MaskWindowConfig.MetricsLineHeight), "指标单行高度", "每一行指标占用的高度。", onChanged),
-                OverlayStyleSettingItem.Number(config, nameof(MaskWindowConfig.MetricsItemWidth), "单个指标项宽度", "每个指标项占用的宽度。", onChanged),
-                OverlayStyleSettingItem.Number(config, nameof(MaskWindowConfig.MetricsNameColumnWidth), "指标名称列宽度", "指标名称这一列的宽度。", onChanged),
-                OverlayStyleSettingItem.Bool(config, nameof(MaskWindowConfig.MetricsShadowEnabled), "显示指标栏阴影", "开启后指标栏在复杂背景上更容易看清。", onChanged),
-                OverlayStyleSettingItem.Color(config, nameof(MaskWindowConfig.MetricsShadowColor), "指标栏阴影颜色", "指标栏阴影颜色。", onChanged),
-                OverlayStyleSettingItem.Number(config, nameof(MaskWindowConfig.MetricsShadowOpacity), "指标栏阴影透明度", "指标栏阴影强度，0 表示没有阴影，1 表示最明显。", onChanged),
-                OverlayStyleSettingItem.Number(config, nameof(MaskWindowConfig.MetricsShadowBlurRadius), "指标栏阴影模糊半径", "指标栏阴影的扩散范围，数值越大阴影越柔和。", onChanged),
+            new OverlayStyleSettingGroup("Performance Metrics Overlay", "Displays runtime metrics such as FPS, processing time, and hardware usage.", OverlayStyleSettingGroupKind.Metrics, [
+                OverlayStyleSettingItem.Color(config, nameof(MaskWindowConfig.MetricsPanelBackgroundColor), "Metrics Bar Background Color", "Background color of the metrics bar.", onChanged),
+                OverlayStyleSettingItem.Color(config, nameof(MaskWindowConfig.MetricsPanelBorderColor), "Metrics Bar Border Color", "Border color of the metrics bar (hidden when thickness is 0).", onChanged),
+                OverlayStyleSettingItem.Number(config, nameof(MaskWindowConfig.MetricsPanelBorderThickness), "Metrics Bar Border Thickness", "Border width of the metrics bar (0 hides the border).", onChanged),
+                OverlayStyleSettingItem.Color(config, nameof(MaskWindowConfig.MetricsTextColor), "Metrics Text Color", "Text color of metrics.", onChanged),
+                OverlayStyleSettingItem.Slider(config, nameof(MaskWindowConfig.MetricsFontScale), "Metrics Bar Scale", "Additional scale factor applied to metrics font size and layout when overlay scaling is enabled (0.5x - 3.0x).", MaskWindowConfig.MinLogFontScale, MaskWindowConfig.MaxLogFontScale, 0.1, onChanged),
+                OverlayStyleSettingItem.Number(config, nameof(MaskWindowConfig.MetricsFontSize), "Metrics Font Size", "Font size of the metrics bar.", onChanged),
+                OverlayStyleSettingItem.Number(config, nameof(MaskWindowConfig.MetricsLineHeight), "Metrics Row Height", "Height of each metrics row.", onChanged),
+                OverlayStyleSettingItem.Number(config, nameof(MaskWindowConfig.MetricsItemWidth), "Single Metric Item Width", "Width occupied by each metric item.", onChanged),
+                OverlayStyleSettingItem.Number(config, nameof(MaskWindowConfig.MetricsNameColumnWidth), "Metric Name Column Width", "Width of the metric label column.", onChanged),
+                OverlayStyleSettingItem.Bool(config, nameof(MaskWindowConfig.MetricsShadowEnabled), "Show Metrics Bar Shadow", "Makes the metrics bar easier to read over complex backgrounds.", onChanged),
+                OverlayStyleSettingItem.Color(config, nameof(MaskWindowConfig.MetricsShadowColor), "Metrics Bar Shadow Color", "Color of the metrics bar shadow.", onChanged),
+                OverlayStyleSettingItem.Number(config, nameof(MaskWindowConfig.MetricsShadowOpacity), "Metrics Bar Shadow Opacity", "Shadow intensity (0 = none, 1 = strongest).", onChanged),
+                OverlayStyleSettingItem.Number(config, nameof(MaskWindowConfig.MetricsShadowBlurRadius), "Metrics Bar Shadow Blur Radius", "Shadow spread radius (higher values produce a softer shadow).", onChanged),
             ], config, nameof(MaskWindowConfig.ShowOverlayMetrics), onChanged),
-            new OverlayStyleSettingGroup("方位遮罩", "在小地图周围显示东、南、西、北文字，辅助判断朝向。", OverlayStyleSettingGroupKind.Direction, [
-                OverlayStyleSettingItem.Color(config, nameof(MaskWindowConfig.DirectionTextColor), "方位文字颜色", "小地图周围方位文字的颜色。", onChanged),
-                OverlayStyleSettingItem.Number(config, nameof(MaskWindowConfig.DirectionFontSize), "方位文字大小", "小地图方位文字字号。", onChanged),
-                OverlayStyleSettingItem.Bool(config, nameof(MaskWindowConfig.DirectionShadowEnabled), "显示方位文字阴影", "开启后方位文字在复杂背景上更容易看清。", onChanged),
-                OverlayStyleSettingItem.Color(config, nameof(MaskWindowConfig.DirectionShadowColor), "方位文字阴影颜色", "方位文字阴影颜色。", onChanged),
-                OverlayStyleSettingItem.Number(config, nameof(MaskWindowConfig.DirectionShadowOpacity), "方位文字阴影透明度", "方位文字阴影强度，0 表示没有阴影，1 表示最明显。", onChanged),
-                OverlayStyleSettingItem.Number(config, nameof(MaskWindowConfig.DirectionShadowBlurRadius), "方位文字阴影模糊半径", "方位文字阴影的扩散范围，数值越大阴影越柔和。", onChanged),
+            new OverlayStyleSettingGroup("Cardinal Directions Overlay", "Displays N, S, E, W labels around the minimap to assist with orientation.", OverlayStyleSettingGroupKind.Direction, [
+                OverlayStyleSettingItem.Color(config, nameof(MaskWindowConfig.DirectionTextColor), "Direction Text Color", "Color of the cardinal direction labels around the minimap.", onChanged),
+                OverlayStyleSettingItem.Number(config, nameof(MaskWindowConfig.DirectionFontSize), "Direction Font Size", "Font size of the minimap direction labels.", onChanged),
+                OverlayStyleSettingItem.Bool(config, nameof(MaskWindowConfig.DirectionShadowEnabled), "Show Direction Text Shadow", "Makes direction labels easier to read over complex backgrounds.", onChanged),
+                OverlayStyleSettingItem.Color(config, nameof(MaskWindowConfig.DirectionShadowColor), "Direction Text Shadow Color", "Color of the direction text shadow.", onChanged),
+                OverlayStyleSettingItem.Number(config, nameof(MaskWindowConfig.DirectionShadowOpacity), "Direction Text Shadow Opacity", "Shadow intensity (0 = none, 1 = strongest).", onChanged),
+                OverlayStyleSettingItem.Number(config, nameof(MaskWindowConfig.DirectionShadowBlurRadius), "Direction Text Shadow Blur Radius", "Shadow spread radius (higher values produce a softer shadow).", onChanged),
             ], config, nameof(MaskWindowConfig.DirectionsEnabled), onChanged),
-            new OverlayStyleSettingGroup("识别结果遮罩", "显示图像识别的框线和文字。", OverlayStyleSettingGroupKind.Recognition, [
-                OverlayStyleSettingItem.Bool(config, nameof(MaskWindowConfig.RecognitionUseDrawableStyle), "统一识别框线颜色", "关闭时保留任务自己指定的颜色；开启后使用下面设置的统一颜色。", onChanged),
-                OverlayStyleSettingItem.Color(config, nameof(MaskWindowConfig.RecognitionRectStrokeColor), "识别矩形边框颜色", "开启统一颜色后，识别矩形框使用的颜色。", onChanged),
-                OverlayStyleSettingItem.Number(config, nameof(MaskWindowConfig.RecognitionRectStrokeThickness), "识别矩形线宽", "开启统一颜色后，识别矩形框的线宽。", onChanged),
-                OverlayStyleSettingItem.Color(config, nameof(MaskWindowConfig.RecognitionLineStrokeColor), "识别线条颜色", "开启统一颜色后，识别线条使用的颜色。", onChanged),
-                OverlayStyleSettingItem.Number(config, nameof(MaskWindowConfig.RecognitionLineStrokeThickness), "识别线条线宽", "开启统一颜色后，识别线条的线宽。", onChanged),
-                OverlayStyleSettingItem.Color(config, nameof(MaskWindowConfig.RecognitionTextColor), "识别文字颜色", "普通识别结果文字的颜色。", onChanged),
-                OverlayStyleSettingItem.Number(config, nameof(MaskWindowConfig.RecognitionTextFontSize), "识别文字大小", "普通识别结果文字的基础字号。", onChanged),
+            new OverlayStyleSettingGroup("Recognition Results Overlay", "Displays bounding boxes and labels from image recognition.", OverlayStyleSettingGroupKind.Recognition, [
+                OverlayStyleSettingItem.Bool(config, nameof(MaskWindowConfig.RecognitionUseDrawableStyle), "Unify Recognition Box Colors", "When disabled, uses task-defined colors; when enabled, uses the unified colors below.", onChanged),
+                OverlayStyleSettingItem.Color(config, nameof(MaskWindowConfig.RecognitionRectStrokeColor), "Recognition Box Border Color", "Color used for recognition bounding boxes when unified color is enabled.", onChanged),
+                OverlayStyleSettingItem.Number(config, nameof(MaskWindowConfig.RecognitionRectStrokeThickness), "Recognition Box Line Width", "Line thickness of recognition bounding boxes when unified color is enabled.", onChanged),
+                OverlayStyleSettingItem.Color(config, nameof(MaskWindowConfig.RecognitionLineStrokeColor), "Recognition Line Color", "Color used for recognition lines when unified color is enabled.", onChanged),
+                OverlayStyleSettingItem.Number(config, nameof(MaskWindowConfig.RecognitionLineStrokeThickness), "Recognition Line Width", "Line thickness of recognition lines when unified color is enabled.", onChanged),
+                OverlayStyleSettingItem.Color(config, nameof(MaskWindowConfig.RecognitionTextColor), "Recognition Text Color", "Color of standard recognition result labels.", onChanged),
+                OverlayStyleSettingItem.Number(config, nameof(MaskWindowConfig.RecognitionTextFontSize), "Recognition Font Size", "Base font size of standard recognition result labels.", onChanged),
             ], config, nameof(MaskWindowConfig.DisplayRecognitionResultsOnMask), onChanged),
-            new OverlayStyleSettingGroup("自定义 HTML 遮罩", "用 HTML 制作遮罩。", OverlayStyleSettingGroupKind.CustomHtml, [
-                OverlayStyleSettingItem.Bool(config, nameof(MaskWindowConfig.CustomHtmlMaskClickThrough), "HTML 遮罩鼠标穿透", "开启后鼠标可穿透遮罩；关闭后 HTML 内容可以接收点击和输入。", onChanged),
-                OverlayStyleSettingItem.Bool(config, nameof(MaskWindowConfig.CustomHtmlMaskAutoReloadOnSave), "保存后自动刷新 HTML", "开启后保存 HTML 会立即刷新已经打开的自定义遮罩。", onChanged),
+            new OverlayStyleSettingGroup("Custom HTML Overlay", "Create custom overlays using HTML.", OverlayStyleSettingGroupKind.CustomHtml, [
+                OverlayStyleSettingItem.Bool(config, nameof(MaskWindowConfig.CustomHtmlMaskClickThrough), "HTML Overlay Click-Through", "When enabled, mouse clicks pass through the overlay; when disabled, HTML content can receive clicks and input.", onChanged),
+                OverlayStyleSettingItem.Bool(config, nameof(MaskWindowConfig.CustomHtmlMaskAutoReloadOnSave), "Auto-Reload HTML on Save", "Automatically refreshes open custom HTML overlays when saved.", onChanged),
             ], config, nameof(MaskWindowConfig.CustomHtmlMaskEnabled), onChanged),
         ];
     }
 
     private static IEnumerable<OverlayStyleSettingItem> CreateGlobalItems(MaskWindowConfig config, Action onChanged)
     {
-        yield return OverlayStyleSettingItem.Bool(config, nameof(MaskWindowConfig.OverlayScalingEnabled), "启用遮罩字体缩放", "开启后根据游戏分辨率和系统 DPI 缩放日志、状态、FPS 与指标栏的字体大小；关闭后直接使用各项基础尺寸。", onChanged);
-        yield return OverlayStyleSettingItem.Slider(config, nameof(MaskWindowConfig.LogFontScale), "遮罩字体缩放率", "启用遮罩字体缩放后，在日志、状态和 FPS 基础字号上叠加缩放，范围为 0.5-3.0 倍。", MaskWindowConfig.MinLogFontScale, MaskWindowConfig.MaxLogFontScale, 0.1, onChanged);
-        yield return OverlayStyleSettingItem.Slider(config, nameof(MaskWindowConfig.TextOpacity), "遮罩文字透明度", "调整遮罩上所有文字的透明度，1 表示完全不透明，0 表示完全透明。", 0, 1, 0.1, onChanged);
-        yield return OverlayStyleSettingItem.Color(config, nameof(MaskWindowConfig.OverlayWindowBackgroundColor), "主遮罩窗口背景色", "遮罩窗口本身的背景色。", onChanged);
+        yield return OverlayStyleSettingItem.Bool(config, nameof(MaskWindowConfig.OverlayScalingEnabled), "Enable Overlay Font Scaling", "Scales log, status, FPS, and metrics font sizes based on game resolution and system DPI; uses base sizes when disabled.", onChanged);
+        yield return OverlayStyleSettingItem.Slider(config, nameof(MaskWindowConfig.LogFontScale), "Overlay Font Scale Factor", "Additional scale factor applied to log, status, and FPS base font sizes when scaling is enabled (0.5x - 3.0x).", MaskWindowConfig.MinLogFontScale, MaskWindowConfig.MaxLogFontScale, 0.1, onChanged);
+        yield return OverlayStyleSettingItem.Slider(config, nameof(MaskWindowConfig.TextOpacity), "Overlay Text Opacity", "Adjusts opacity of all text on the overlay (1 = opaque, 0 = transparent).", 0, 1, 0.1, onChanged);
+        yield return OverlayStyleSettingItem.Color(config, nameof(MaskWindowConfig.OverlayWindowBackgroundColor), "Main Overlay Background Color", "Background color of the overlay window itself.", onChanged);
 
         if (WinePlatformAddon.IsRunningOnWine)
         {
-            yield return OverlayStyleSettingItem.Color(config, nameof(MaskWindowConfig.WineOverlayBackgroundColor), "Wine 兼容背景色", "仅在 Wine 环境下使用的兼容背景色。", onChanged);
+            yield return OverlayStyleSettingItem.Color(config, nameof(MaskWindowConfig.WineOverlayBackgroundColor), "Wine Compatibility Background Color", "Compatibility background color used only under Wine.", onChanged);
         }
     }
 }
@@ -645,26 +640,26 @@ public sealed class OverlayStyleSettingItem : ObservableObject
 {
     private static readonly IReadOnlyList<OverlayStyleColorOption> BaseColorOptions =
     [
-        new("透明", MaskWindowConfig.DefaultTransparentColor),
-        new("几乎透明黑色", MaskWindowConfig.DefaultOverlayWindowBackgroundColor),
-        new("半透明黑色", MaskWindowConfig.DefaultPanelBorderColor),
-        new("浅灰色", "LightGray"),
-        new("白色", "White"),
-        new("黑色", "Black"),
-        new("纯黑色", MaskWindowConfig.DefaultShadowColor),
-        new("浅绿色", "LightGreen"),
-        new("绿色", "Green"),
-        new("红色", "Red"),
-        new("橙色", "Orange"),
-        new("黄色", "Yellow"),
-        new("天蓝色", "DeepSkyBlue"),
-        new("蓝色", "DodgerBlue"),
-        new("紫色", "Purple"),
-        new("粉色", "HotPink")
+        new("Transparent", MaskWindowConfig.DefaultTransparentColor),
+        new("Nearly Transparent Black", MaskWindowConfig.DefaultOverlayWindowBackgroundColor),
+        new("Semi-Transparent Black", MaskWindowConfig.DefaultPanelBorderColor),
+        new("Light Gray", "LightGray"),
+        new("White", "White"),
+        new("Black", "Black"),
+        new("Pure Black", MaskWindowConfig.DefaultShadowColor),
+        new("Light Green", "LightGreen"),
+        new("Green", "Green"),
+        new("Red", "Red"),
+        new("Orange", "Orange"),
+        new("Yellow", "Yellow"),
+        new("Deep Sky Blue", "DeepSkyBlue"),
+        new("Dodger Blue", "DodgerBlue"),
+        new("Purple", "Purple"),
+        new("Hot Pink", "HotPink")
     ];
 
     private static readonly OverlayStyleColorOption WineColorOption =
-        new("Wine 兼容半透明黑色", MaskWindowConfig.DefaultWineOverlayBackgroundColor);
+        new("Wine Semi-Transparent Black", MaskWindowConfig.DefaultWineOverlayBackgroundColor);
 
     private readonly MaskWindowConfig _config;
     private readonly System.Reflection.PropertyInfo _property;
@@ -730,7 +725,7 @@ public sealed class OverlayStyleSettingItem : ObservableObject
                 return commonColorOptions;
             }
 
-            return [.. commonColorOptions, new OverlayStyleColorOption($"当前自定义颜色（{currentValue}）", currentValue)];
+            return [.. commonColorOptions, new OverlayStyleColorOption($"Custom Color ({currentValue})", currentValue)];
         }
     }
 

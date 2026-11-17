@@ -31,9 +31,9 @@ public partial class ScriptGroupConfigViewModel : ObservableObject, IViewModel
     [ObservableProperty]
     private ObservableCollection<KeyValuePair<string, string>> _onlyPickEliteDropsSource  = new()
     {
-        new KeyValuePair<string, string>("Closed", "关闭功能"),
-        new KeyValuePair<string, string>("AllowAutoPickupForNonElite", "非精英允许自动拾取"),
-        new KeyValuePair<string, string>("DisableAutoPickupForNonElite", "非精英关闭自动拾取")
+        new KeyValuePair<string, string>("Closed", "Disabled"),
+        new KeyValuePair<string, string>("AllowAutoPickupForNonElite", "Allow Auto-Pickup for Non-Elites"),
+        new KeyValuePair<string, string>("DisableAutoPickupForNonElite", "Disable Auto-Pickup for Non-Elites")
     };    
     //跳过策略
     //GroupPhysicalPathSkipPolicy:  配置组且物理路径相同跳过
@@ -42,24 +42,24 @@ public partial class ScriptGroupConfigViewModel : ObservableObject, IViewModel
     [ObservableProperty]
     private ObservableCollection<KeyValuePair<string, string>> _skipPolicySource  = new()
     {
-        new KeyValuePair<string, string>("GroupPhysicalPathSkipPolicy", "配置组且物理路径相同跳过"),
-        new KeyValuePair<string, string>("PhysicalPathSkipPolicy", "物理路径相同跳过"),
-        new KeyValuePair<string, string>("SameNameSkipPolicy", "同类型同名跳过")
+        new KeyValuePair<string, string>("GroupPhysicalPathSkipPolicy", "Skip Same Group & Physical Path"),
+        new KeyValuePair<string, string>("PhysicalPathSkipPolicy", "Skip Same Physical Path"),
+        new KeyValuePair<string, string>("SameNameSkipPolicy", "Skip Same Type & Name")
     };     
     
     [ObservableProperty]
     private ObservableCollection<KeyValuePair<string, string>> _referencePointSource  = new()
     {
-        new KeyValuePair<string, string>("StartTime", "开始时间"),
-        new KeyValuePair<string, string>("EndTime", "结束时间")
+        new KeyValuePair<string, string>("StartTime", "Start Time"),
+        new KeyValuePair<string, string>("EndTime", "End Time")
     };
 
     [ObservableProperty]
     private ObservableCollection<KeyValuePair<RecoverTiming, string>> _recoverTimingSource = new()
     {
-        new KeyValuePair<RecoverTiming, string>(RecoverTiming.AnyWaypoint, "任何路径点"),
-        new KeyValuePair<RecoverTiming, string>(RecoverTiming.OnlyTeleport, "只在传送点"),
-        new KeyValuePair<RecoverTiming, string>(RecoverTiming.Never, "不回复"),
+        new KeyValuePair<RecoverTiming, string>(RecoverTiming.AnyWaypoint, "Any Waypoint"),
+        new KeyValuePair<RecoverTiming, string>(RecoverTiming.OnlyTeleport, "Teleport Points Only"),
+        new KeyValuePair<RecoverTiming, string>(RecoverTiming.Never, "Never Recover"),
     };
     public ScriptGroupConfigViewModel(AllConfig config, ScriptGroupConfig scriptGroupConfig)
     {

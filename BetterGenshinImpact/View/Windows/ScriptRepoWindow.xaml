@@ -114,7 +114,7 @@
                                                   HorizontalScrollBarVisibility="Disabled"
                                                   Padding="8,6">
                                         <ui:TextBlock Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"
-                                                      Text="{Binding CurrentRepoUrl}"
+                                                      Text="{i18n:TValue CurrentRepoUrl}"
                                                       TextWrapping="Wrap" />
                                     </ScrollViewer>
                                 </Border>
@@ -306,7 +306,7 @@
                               Margin="0,0,0,4"
                               VerticalAlignment="Center"
                               Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"
-                              Text="{Binding UpdateProgressText}" />
+                              Text="{i18n:TValue UpdateProgressText}" />
                 <ProgressBar Grid.Row="1"
                              IsIndeterminate="{Binding IsProgressIndeterminate}"
                              Maximum="100"

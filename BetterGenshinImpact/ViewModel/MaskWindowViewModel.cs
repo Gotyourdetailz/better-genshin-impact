@@ -137,7 +137,7 @@ namespace BetterGenshinImpact.ViewModel
 
         [ObservableProperty] private bool _isMapPointsLoading;
 
-        [ObservableProperty] private string _mapPointsLoadingText = "正在加载点位...";
+        [ObservableProperty] private string _mapPointsLoadingText = "Loading map points...";
 
         public int MapPointTotalCount => MapPoints.Count;
 
@@ -165,8 +165,8 @@ namespace BetterGenshinImpact.ViewModel
 
         public IReadOnlyList<MapPointApiProviderOption> MapPointApiProviderOptions { get; } =
         [
-            new(MapPointApiProvider.MihoyoMap, "米游社大地图"),
-            new(MapPointApiProvider.KongyingTavern, "空荧酒馆"),
+            new(MapPointApiProvider.MihoyoMap, "HoYoLAB / Mihoyo Map"),
+            new(MapPointApiProvider.KongyingTavern, "Kongying Tavern"),
             new(MapPointApiProvider.HoYoLab, "HoYoLab")
         ];
 

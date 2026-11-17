@@ -38,8 +38,8 @@ public partial class TriggerSettingsPageViewModel : ViewModel
     [ObservableProperty] private Dictionary<string, string> _pictureInPictureSourceTypeDict =
         new()
         {
-            { nameof(PictureSourceType.CaptureLoop), "60帧模式" },
-            { nameof(PictureSourceType.TriggerDispatcher), "截图器供图" }
+            { nameof(PictureSourceType.CaptureLoop), "60 FPS Mode" },
+            { nameof(PictureSourceType.TriggerDispatcher), "Capture Dispatcher" }
         };
 
     public AllConfig Config { get; set; }

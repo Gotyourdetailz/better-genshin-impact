@@ -16,9 +16,9 @@ public partial class PathingConfigViewModel : ObservableObject, IViewModel
     [ObservableProperty]
     private ObservableCollection<KeyValuePair<RecoverTiming, string>> _recoverTimingSource = new()
     {
-        new KeyValuePair<RecoverTiming, string>(RecoverTiming.AnyWaypoint, "任何路径点"),
-        new KeyValuePair<RecoverTiming, string>(RecoverTiming.OnlyTeleport, "只在传送点"),
-        new KeyValuePair<RecoverTiming, string>(RecoverTiming.Never, "不回复"),
+        new KeyValuePair<RecoverTiming, string>(RecoverTiming.AnyWaypoint, "Any Waypoint"),
+        new KeyValuePair<RecoverTiming, string>(RecoverTiming.OnlyTeleport, "Teleport Points Only"),
+        new KeyValuePair<RecoverTiming, string>(RecoverTiming.Never, "Never Recover"),
     };
 
     [RelayCommand]

@@ -3822,13 +3822,13 @@
                     <ui:TextBlock Grid.Row="0"
                                   Grid.Column="0"
                                   FontTypography="Body"
-                                  Text="自动连招（实验）"
+                                  Text="Auto Combo (Experimental)"
                                   TextWrapping="Wrap" />
                     <ui:TextBlock Grid.Row="1"
                                   Grid.Column="0"
                                   Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
                                   TextWrapping="Wrap">
-                        启动本任务后识别队伍，构建连招行为树
+                        Recognize party upon starting and build an automated combo behavior tree
                     </ui:TextBlock>
                     <ui:Button Grid.Row="0"
                                Grid.RowSpan="2"
@@ -3842,7 +3842,7 @@
                                              Grid.Column="2"
                                              Margin="0,0,24,0"
                                              DisableCommand="{Binding StopSoloTaskCommand}"
-                                             DisableContent="停止"
+                                             DisableContent="Stop"
                                              EnableCommand="{Binding SwitchAutoComboCommand}"
                                              EnableContent="{Binding SwitchAutoComboButtonText}"
                                              IsChecked="{Binding SwitchAutoComboEnabled}" />
@@ -3881,7 +3881,7 @@
                         <ComboBoxItem Tag="{x:Static combobuild:AutoComboLlmProvider.OpenAiCompatible}"
                                       Content="{i18n:T OpenAI 兼容}" />
                         <ComboBoxItem Tag="{x:Static combobuild:AutoComboLlmProvider.FishRelief}"
-                                      Content="FishRelief 发鱼站" />
+                                      Content="FishRelief" />
                         <ComboBoxItem Tag="{x:Static combobuild:AutoComboLlmProvider.Anthropic}"
                                       Content="Anthropic" />
                     </ComboBox>
@@ -3901,12 +3901,12 @@
                                   Grid.Column="0"
                                   FontTypography="Body"
                                   TextWrapping="Wrap">
-                        决策LLM服务地址
+                        Planning LLM Endpoint URL
                     </ui:TextBlock>
                     <ui:TextBlock Grid.Row="2"
                                   Grid.Column="0"
                                   Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                                  Text="必须使用 HTTPS 地址，否则密钥会明文传输；本机地址（localhost/127.0.0.1）除外；Anthropic 可留空使用官方地址，填写时不要带 /v1"
+                                  Text="HTTPS is required unless using localhost/127.0.0.1; leave blank for official Anthropic endpoint (do not append /v1)"
                                   TextWrapping="Wrap" />
                     <ui:TextBox Grid.Row="0"
                                 Grid.RowSpan="3"
@@ -3930,7 +3930,7 @@
                                   Grid.Column="0"
                                   FontTypography="Body"
                                   TextWrapping="Wrap">
-                        LLM模型名
+                        LLM Model Name
                     </ui:TextBlock>
                     <!-- 下拉与按钮放在同一个固定宽度的容器里：容器与其余各行的值控件对齐，
                          内部用 * 吸收按钮宽度的变化，避免按钮文字长度反过来把下拉挤扁。 -->
@@ -3972,12 +3972,12 @@
                                   Grid.Column="0"
                                   FontTypography="Body"
                                   TextWrapping="Wrap">
-                        LLM服务密钥
+                        LLM API Key
                     </ui:TextBlock>
                     <ui:TextBlock Grid.Row="1"
                                   Grid.Column="0"
                                   Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                                  Text="注意保护好密钥"
+                                  Text="Keep your API key secure"
                                   TextWrapping="Wrap" />
                     <ui:PasswordBox Grid.Row="0"
                                     Grid.RowSpan="2"
@@ -4001,12 +4001,12 @@
                                   Grid.Column="0"
                                   FontTypography="Body"
                                   TextWrapping="Wrap">
-                        额外提示词
+                        Extra Prompt
                     </ui:TextBlock>
                     <ui:TextBlock Grid.Row="1"
                                   Grid.Column="0"
                                   Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                                  Text="追加给 LLM 的自定义要求，如“使用芭芭拉重击来输出”；留空则不注入"
+                                  Text="Custom instructions appended to the LLM prompt; leave blank to omit"
                                   TextWrapping="Wrap" />
                     <ui:TextBox Grid.Row="0"
                                 Grid.RowSpan="2"
@@ -4035,12 +4035,12 @@
                                   Grid.Column="0"
                                   FontTypography="Body"
                                   TextWrapping="Wrap">
-                        主建树提示词
+                        Main Tree Prompt
                     </ui:TextBlock>
                     <ui:TextBlock Grid.Row="1"
                                   Grid.Column="0"
                                   Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                                  Text="“当前队伍”“元素反应”等小节由程序自动追加，无需填写；留空使用默认正文"
+                                  Text="Current party and elemental reaction sections are appended automatically; leave blank to use default"
                                   TextWrapping="Wrap" />
                     <ui:TextBox Grid.Row="0"
                                 Grid.RowSpan="2"
@@ -4069,12 +4069,12 @@
                                   Grid.Column="0"
                                   FontTypography="Body"
                                   TextWrapping="Wrap">
-                        兜底建树提示词
+                        Fallback Tree Prompt
                     </ui:TextBlock>
                     <ui:TextBlock Grid.Row="1"
                                   Grid.Column="0"
                                   Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                                  Text="“当前队伍”小节由程序自动追加，无需填写；留空使用默认正文"
+                                  Text="Current party section is appended automatically; leave blank to use default"
                                   TextWrapping="Wrap" />
                     <ui:TextBox Grid.Row="0"
                                 Grid.RowSpan="2"
@@ -4098,18 +4098,18 @@
                     <StackPanel Grid.Column="0">
                         <ui:TextBlock FontTypography="Body"
                                       TextWrapping="Wrap">
-                            角色提示词覆盖
+                            Character Prompt Overrides
                         </ui:TextBlock>
                         <ui:TextBlock Margin="0,4,0,0"
                                       Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                                      Text="自定义角色的战术描述，未覆盖的角色使用内置描述；删除行即恢复内置描述；如重复只取第一个"
+                                      Text="Override tactical descriptions for specific characters; delete a row to restore built-in defaults"
                                       TextWrapping="Wrap" />
                     </StackPanel>
                     <ui:Button Grid.Column="1"
                                Margin="12,0,36,0"
                                VerticalAlignment="Center"
                                Command="{Binding AddAvatarDescriptionOverrideCommand}"
-                               Content="添加角色" />
+                               Content="Add Character" />
                 </Grid>
                 <ItemsControl Margin="16,0,36,16"
                               Visibility="{Binding IsAutoComboFishRelief, Converter={StaticResource BooleanToVisibilityRevertConverter}}"
@@ -4139,7 +4139,7 @@
                                            VerticalAlignment="Center"
                                            Command="{Binding DataContext.RemoveAvatarDescriptionOverrideCommand, RelativeSource={RelativeSource AncestorType=Page}}"
                                            CommandParameter="{Binding}"
-                                           Content="删除" />
+                                           Content="Delete" />
                             </Grid>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>

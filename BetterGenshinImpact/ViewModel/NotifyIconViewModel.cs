@@ -59,8 +59,8 @@ public partial class NotifyIconViewModel : ObservableObject
         if (_childSessionService.HasActiveChildSession())
         {
             ThemedMessageBox.Warning(
-                "桌面分身仍在运行，请先关闭桌面分身，再退出 BetterGI。",
-                "桌面分身未关闭");
+                "Child session is still running. Please close the child session before exiting BetterGI.",
+                "Child Session Still Running");
             return;
         }
 

@@ -85,14 +85,14 @@ public partial class MaskMapPointInfoPopupViewModel : ObservableObject
             var service = App.GetService<IMaskMapPointService>();
             if (service == null)
             {
-                TextError = "地图服务未就绪";
+                TextError = "Map service not ready";
                 return;
             }
 
             var info = await service.GetPointInfoAsync(point, ct);
             ct.ThrowIfCancellationRequested();
 
-            Text = string.IsNullOrEmpty(info.Text) ? "暂无描述" : info.Text;
+            Text = string.IsNullOrEmpty(info.Text) ? "No description" : info.Text;
             IsTextLoading = false;
             if (info.UrlList is { Count: > 0 })
             {
@@ -117,14 +117,14 @@ public partial class MaskMapPointInfoPopupViewModel : ObservableObject
                     {
                         if (GifSourceUri == null && GifSourceStream == null)
                         {
-                            ImageError = "图片加载失败";
+                            ImageError = "Failed to load image";
                         }
                     }
                     else
                     {
                         if (Image == null)
                         {
-                            ImageError = "图片加载失败";
+                            ImageError = "Failed to load image";
                         }
                     }
                 }
@@ -135,7 +135,7 @@ public partial class MaskMapPointInfoPopupViewModel : ObservableObject
                 catch (Exception ex)
                 {
                     _logger.LogDebug(ex, "加载点位图片失败");
-                    ImageError = "图片加载失败";
+                    ImageError = "Failed to load image";
                 }
                 finally
                 {
@@ -149,7 +149,7 @@ public partial class MaskMapPointInfoPopupViewModel : ObservableObject
         catch (Exception ex)
         {
             _logger.LogDebug(ex, "查询地图点位详情失败");
-            TextError = "查询失败";
+            TextError = "Query failed";
         }
         finally
         {

@@ -4,5 +4,5 @@ namespace BetterGenshinImpact.ViewModel.Pages.OneDragon;
 
 public partial class SereniteaPotViewModel : OneDragonBaseViewModel
 {
-    public override string Title { get; } = "领取尘歌壶奖励";
+    public override string Title { get; } = "Claim Serenitea Pot Rewards";
 }
