@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using OpenCvSharp;
 using System.Linq;
 using BetterGenshinImpact.GameTask.Common;
+using BetterGenshinImpact.Service.I18n;
 using Microsoft.Extensions.Logging;
 
 namespace BetterGenshinImpact.Core.Script.Dependence;
@@ -135,11 +136,40 @@ public class LimitedFile(string rootPath)
     }
 
     /// <summary>
-    /// Normalize and validate a path.
+    /// Normalize and validate a path, falling back to translated English path segments when
+    /// a script references a legacy non-English path whose directory/file was converted on disk.
     /// </summary>
     private string NormalizePath(string path)
     {
-        return ScriptUtils.NormalizePath(rootPath, path);
+        // Prevent double-normalization when internal callers pass an already-rooted path inside rootPath
+        if (Path.IsPathRooted(path))
+        {
+            var full = Path.GetFullPath(path);
+            var fullRoot = Path.GetFullPath(rootPath);
+            if (full.StartsWith(fullRoot, StringComparison.OrdinalIgnoreCase))
+            {
+                return full;
+            }
+        }
+
+        var normalized = ScriptUtils.NormalizePath(rootPath, path);
+        if (File.Exists(normalized) || Directory.Exists(normalized) || !I18nService.ContainsNonEnglishCjk(path))
+        {
+            return normalized;
+        }
+
+        var translatedRelative = PathingNameTranslator.TranslateRelativePath(path);
+        var translatedFull = ScriptUtils.NormalizePath(rootPath, translatedRelative);
+        if (File.Exists(translatedFull) || Directory.Exists(translatedFull))
+        {
+            return translatedFull;
+        }
+
+        // Also support creating a new file/folder inside an already-translated English parent directory
+        var translatedParent = Path.GetDirectoryName(translatedFull);
+        return !string.IsNullOrEmpty(translatedParent) && Directory.Exists(translatedParent)
+            ? translatedFull
+            : normalized;
     }
 
     /// <summary>
@@ -294,43 +324,39 @@ public class LimitedFile(string rootPath)
     /// <returns>是否合法</returns>
     private bool IsValid(string path, string? content = null)
     {
+        return ValidateNormalizedPath(NormalizePath(path), content);
+    }
+
+    private bool ValidateNormalizedPath(string normalizedPath, string? content = null)
+    {
         try
         {
-            // 验证文件扩展名
-            string extension = Path.GetExtension(path).ToLower();
+            string extension = Path.GetExtension(normalizedPath).ToLower();
             if (!Array.Exists(_allowedExtensions, ext => ext == extension))
             {
                 return false;
             }
-            
-            // 确保目录存在
-            var normalizedPath = NormalizePath(path);
+
             string? directoryPath = Path.GetDirectoryName(normalizedPath);
             if (!string.IsNullOrEmpty(directoryPath) && !Directory.Exists(directoryPath))
             {
                 Directory.CreateDirectory(directoryPath);
             }
-            
-            // 如果提供了内容，验证内容是否合法
-            if (content != null)
+
+            if (content != null && content.Length > MaxFileSize)
             {
-                // 检查文件大小
-                if (content.Length > MaxFileSize)
-                {
-                    return false;
-                }
+                return false;
             }
-            
+
             return true;
         }
         catch (Exception ex)
         {
-            // 记录异常并返回 false
             TaskControl.Logger.LogError("IsValid 异常: {Message}", ex.Message);
             return false;
         }
     }
-    
+
     /// <summary>
     /// 同步写入文本到文件
     /// </summary>
@@ -343,7 +369,7 @@ public class LimitedFile(string rootPath)
         try
         {
             path = NormalizePath(path);
-            if (!IsValid(path, content))
+            if (!ValidateNormalizedPath(path, content))
             {
                 return false;
             }
@@ -376,7 +402,7 @@ public class LimitedFile(string rootPath)
         try
         {
             path = NormalizePath(path);
-            if (!IsValid(path, content))
+            if (!ValidateNormalizedPath(path, content))
             {
                 return false;
             }
@@ -410,7 +436,7 @@ public class LimitedFile(string rootPath)
         try
         {
             path = NormalizePath(path);
-            if (!IsValid(path, content))
+            if (!ValidateNormalizedPath(path, content))
             {
                 callbackFunc("路径不合法或文件内容不合法", null);
                 return false;
@@ -532,7 +558,7 @@ public class LimitedFile(string rootPath)
             }
 
             //验证扩展名合法性
-            if (File.Exists(oldPath) && !IsValid(newPath))
+            if (File.Exists(oldPath) && !ValidateNormalizedPath(newPath))
             {
                 TaskControl.Logger.LogError("RenamePathSync 异常: 新文件路径不合法 {Path}", newPath);
                 return false;

@@ -424,7 +424,13 @@
                                           Grid.Column="1"
                                           MinWidth="120"
                                           ItemsSource="{Binding PathingConfig.HurryOnAvatarList}"
-                                          SelectedItem="{Binding PathingConfig.HurryOnAvatar}" />
+                                          SelectedItem="{Binding PathingConfig.HurryOnAvatar}">
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{i18n:TValue}" />
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
                             </Grid>
 
                             <!-- 覆写赶路帧间隔 -->
@@ -481,7 +487,13 @@
                                           Grid.Column="1"
                                           Width="120"
                                           ItemsSource="{Binding PathingConfig.TravelModeList}"
-                                          SelectedItem="{Binding PathingConfig.TravelMode}" />
+                                          SelectedItem="{Binding PathingConfig.TravelMode}">
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{i18n:TValue}" />
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
                             </Grid>
 
                             <!-- 赶路启用距离 -->
@@ -1054,9 +1066,14 @@
                                               Grid.Column="1"
                                               MinWidth="100"
                                               SelectedValuePath="Key"
-                                              DisplayMemberPath="Value"
                                               ItemsSource="{Binding ReferencePointSource}"
-                                              SelectedValue="{Binding PathingConfig.TaskCompletionSkipRuleConfig.ReferencePoint}" />
+                                              SelectedValue="{Binding PathingConfig.TaskCompletionSkipRuleConfig.ReferencePoint}">
+                                        <ComboBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{i18n:TValue Value}" />
+                                            </DataTemplate>
+                                        </ComboBox.ItemTemplate>
+                                    </ComboBox>
                                 </Grid>
                             </StackPanel>
                         </ui:CardExpander>
@@ -1237,6 +1254,11 @@
                                   Margin="0,0,36,0"
                                   ItemsSource="{Binding AutoFightViewModel.CombatStrategyList}"
                                   SelectedItem="{Binding PathingConfig.AutoFightConfig.StrategyName, Mode=TwoWay}">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{i18n:TValue}" />
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
                             <b:Interaction.Triggers>
                                 <b:EventTrigger EventName="DropDownOpened">
                                     <b:InvokeCommandAction Command="{Binding StrategyDropDownOpenedCommand}" CommandParameter="Combat" />

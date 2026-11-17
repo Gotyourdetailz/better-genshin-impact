@@ -8,6 +8,7 @@ using BetterGenshinImpact.Helpers.Ui;
 using BetterGenshinImpact.Helpers.Win32;
 using BetterGenshinImpact.Model;
 using BetterGenshinImpact.Service;
+using BetterGenshinImpact.Service.I18n;
 using BetterGenshinImpact.View.Controls.Webview;
 using BetterGenshinImpact.ViewModel.Pages;
 using Microsoft.Extensions.Logging;
@@ -304,6 +305,7 @@ public class ScriptRepoUpdater : Singleton<ScriptRepoUpdater>
 
         int successCount = 0;
         int failCount = 0;
+        var clearedTargets = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         foreach (var path in validPaths)
         {
@@ -316,7 +318,9 @@ public class ScriptRepoUpdater : Singleton<ScriptRepoUpdater>
                     continue;
                 }
 
-                var destPath = Path.Combine(userPath, remainingPath);
+                var rawDestPath = Path.Combine(userPath, remainingPath);
+                var translateToEnglish = string.Equals(first, "pathing", StringComparison.OrdinalIgnoreCase);
+                var destPath = ResolveEffectiveDestPath(first, userPath, remainingPath);
 
                 // 备份需要保存的文件（仅 JS 脚本）
                 List<string> backupFiles = new();
@@ -325,18 +329,19 @@ public class ScriptRepoUpdater : Singleton<ScriptRepoUpdater>
                     backupFiles = BackupScriptFiles(path, repoPath);
                 }
 
-                // 删除旧文件/目录
-                if (Directory.Exists(destPath))
+                // 删除旧文件/目录（仅首次遇到同一目标时删除，防止同批次碰撞互相覆盖）
+                if (clearedTargets.Add(rawDestPath))
                 {
-                    DirectoryHelper.DeleteDirectoryWithReadOnlyCheck(destPath);
+                    DeleteExistingTarget(rawDestPath);
                 }
-                else if (File.Exists(destPath))
+                if (!string.Equals(destPath, rawDestPath, StringComparison.OrdinalIgnoreCase)
+                    && clearedTargets.Add(destPath))
                 {
-                    File.Delete(destPath);
+                    DeleteExistingTarget(destPath);
                 }
 
-                // 从仓库检出最新文件
-                CheckoutPath(repoPath, path, destPath);
+                // 从仓库检出最新文件（pathing 路线自动转换为英文目录/文件名及描述）
+                CheckoutPath(repoPath, path, destPath, translateToEnglish);
 
                 // 图标处理（仅对目录）
                 if (Directory.Exists(destPath))
@@ -1561,13 +1566,39 @@ public class ScriptRepoUpdater : Singleton<ScriptRepoUpdater>
         }
     }
 
+    private static string ResolveEffectiveDestPath(string first, string userPath, string remainingPath)
+    {
+        if (!string.Equals(first, "pathing", StringComparison.OrdinalIgnoreCase))
+        {
+            return Path.Combine(userPath, remainingPath);
+        }
+
+        var translatedRemaining = PathingNameTranslator.TranslateRelativePath(remainingPath);
+        return string.IsNullOrEmpty(translatedRemaining)
+            ? userPath
+            : Path.Combine(userPath, translatedRemaining);
+    }
+
+    private static void DeleteExistingTarget(string path)
+    {
+        if (Directory.Exists(path))
+        {
+            DirectoryHelper.DeleteDirectoryWithReadOnlyCheck(path);
+        }
+        else if (File.Exists(path))
+        {
+            File.Delete(path);
+        }
+    }
+
     /// <summary>
     /// 从仓库中检出指定路径的文件或文件夹到目标位置
     /// </summary>
     /// <param name="repoPath">仓库路径</param>
     /// <param name="sourcePath">仓库中的相对路径</param>
     /// <param name="destPath">目标路径</param>
-    private void CheckoutPath(string repoPath, string sourcePath, string destPath)
+    /// <param name="translateToEnglish">是否将路线文件名与 JSON info 转为英文</param>
+    private void CheckoutPath(string repoPath, string sourcePath, string destPath, bool translateToEnglish = false)
     {
         // 判断仓库类型：检查是否为 Git 仓库且不存在 repo/ 子目录
         bool isGitRepo = IsGitRepository(repoPath);
@@ -1594,11 +1625,6 @@ public class ScriptRepoUpdater : Singleton<ScriptRepoUpdater>
                 entry = currentTree[pathParts[i]];
                 if (entry == null)
                 {
-                    // 调试信息：列出当前树中的所有条目
-                    // var availableEntries = string.Join(", ", currentTree.Select(e => e.Name));
-                    // _logger.LogError($"在路径 '{string.Join("/", pathParts.Take(i))}' 中未找到 '{pathParts[i]}'");
-                    // _logger.LogError($"可用的条目: {availableEntries}");
-                    // throw new Exception($"仓库中不存在路径: {sourcePath}");
                     return;
                 }
 
@@ -1615,7 +1641,6 @@ public class ScriptRepoUpdater : Singleton<ScriptRepoUpdater>
             // 检出文件或目录
             if (entry == null)
             {
-                // throw new Exception($"未找到路径: {sourcePath}");
                 return;
             }
 
@@ -1623,25 +1648,13 @@ public class ScriptRepoUpdater : Singleton<ScriptRepoUpdater>
             {
                 // 检出单个文件
                 var blob = (Blob)entry.Target;
-
-                // 确保目标目录存在
-                var dir = Path.GetDirectoryName(destPath);
-                if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
-                {
-                    Directory.CreateDirectory(dir);
-                }
-
-                using (var contentStream = blob.GetContentStream())
-                using (var fileStream = File.Create(destPath))
-                {
-                    contentStream.CopyTo(fileStream);
-                }
+                WriteBlobToDestination(blob, destPath, translateToEnglish);
             }
             else if (entry.TargetType == TreeEntryTargetType.Tree)
             {
                 // 检出目录
                 var tree = (Tree)entry.Target;
-                CheckoutTree(tree, destPath, sourcePath);
+                CheckoutTree(tree, destPath, sourcePath, translateToEnglish);
             }
         }
         else
@@ -1652,17 +1665,12 @@ public class ScriptRepoUpdater : Singleton<ScriptRepoUpdater>
             if (Directory.Exists(scriptPath))
             {
                 // 复制目录
-                CopyDirectory(scriptPath, destPath);
+                CopyDirectory(scriptPath, destPath, translateToEnglish);
             }
             else if (File.Exists(scriptPath))
             {
                 // 复制文件
-                var dir = Path.GetDirectoryName(destPath);
-                if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
-                {
-                    Directory.CreateDirectory(dir);
-                }
-                File.Copy(scriptPath, destPath, true);
+                CopyFileWithOptionalTranslation(scriptPath, destPath, translateToEnglish);
             }
             else
             {
@@ -1671,32 +1679,101 @@ public class ScriptRepoUpdater : Singleton<ScriptRepoUpdater>
         }
     }
 
+    private static void WriteBlobToDestination(Blob blob, string destPath, bool translateToEnglish)
+    {
+        var dir = Path.GetDirectoryName(destPath);
+        if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
+        {
+            Directory.CreateDirectory(dir);
+        }
+
+        if (translateToEnglish && destPath.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
+        {
+            using var reader = new StreamReader(blob.GetContentStream(), System.Text.Encoding.UTF8);
+            var rawJson = reader.ReadToEnd();
+            var translatedJson = PathingNameTranslator.TranslatePathingJsonContent(rawJson);
+            File.WriteAllText(destPath, translatedJson, new System.Text.UTF8Encoding(false));
+            return;
+        }
+
+        using var contentStream = blob.GetContentStream();
+        using var fileStream = File.Create(destPath);
+        contentStream.CopyTo(fileStream);
+    }
+
+    private static void CopyFileWithOptionalTranslation(string sourceFile, string destPath, bool translateToEnglish)
+    {
+        var dir = Path.GetDirectoryName(destPath);
+        if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
+        {
+            Directory.CreateDirectory(dir);
+        }
+
+        if (translateToEnglish && destPath.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
+        {
+            var rawJson = File.ReadAllText(sourceFile, System.Text.Encoding.UTF8);
+            var translatedJson = PathingNameTranslator.TranslatePathingJsonContent(rawJson);
+            File.WriteAllText(destPath, translatedJson, new System.Text.UTF8Encoding(false));
+            return;
+        }
+
+        File.Copy(sourceFile, destPath, true);
+    }
+
+    private static string ResolveUniqueChildPath(
+        string parentDir,
+        string targetName,
+        HashSet<string> usedInScope,
+        bool isDirectory)
+    {
+        var candidateName = targetName;
+        var stem = isDirectory ? targetName : Path.GetFileNameWithoutExtension(targetName);
+        var ext = isDirectory ? string.Empty : Path.GetExtension(targetName);
+        var counter = 2;
+
+        while (!usedInScope.Add(candidateName)
+               || (!isDirectory && File.Exists(Path.Combine(parentDir, candidateName))))
+        {
+            candidateName = $"{stem} ({counter}){ext}";
+            counter++;
+        }
+
+        return Path.Combine(parentDir, candidateName);
+    }
+
     /// <summary>
     /// 递归检出树对象
     /// </summary>
-    private void CheckoutTree(Tree tree, string destPath, string currentPath)
+    private void CheckoutTree(Tree tree, string destPath, string currentPath, bool translateToEnglish = false)
     {
         if (!Directory.Exists(destPath))
         {
             Directory.CreateDirectory(destPath);
         }
 
+        var usedNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (var entry in tree)
         {
-            var entryDestPath = Path.Combine(destPath, entry.Name);
+            var isBlob = entry.TargetType == TreeEntryTargetType.Blob;
+            var isTree = entry.TargetType == TreeEntryTargetType.Tree;
+            var targetName = translateToEnglish
+                ? PathingNameTranslator.TranslatePathSegment(entry.Name, isFile: isBlob)
+                : entry.Name;
+            var entryDestPath = isBlob
+                ? ResolveUniqueChildPath(destPath, targetName, usedNames, isDirectory: false)
+                : ResolveUniqueChildPath(destPath, targetName, usedNames, isDirectory: true);
             var entrySourcePath = $"{currentPath}/{entry.Name}";
 
-            if (entry.TargetType == TreeEntryTargetType.Blob)
+            if (isBlob)
             {
                 var blob = (Blob)entry.Target;
-                using var contentStream = blob.GetContentStream();
-                using var fileStream = File.Create(entryDestPath);
-                contentStream.CopyTo(fileStream);
+                WriteBlobToDestination(blob, entryDestPath, translateToEnglish);
             }
-            else if (entry.TargetType == TreeEntryTargetType.Tree)
+            else if (isTree)
             {
                 var subTree = (Tree)entry.Target;
-                CheckoutTree(subTree, entryDestPath, entrySourcePath);
+                CheckoutTree(subTree, entryDestPath, entrySourcePath, translateToEnglish);
+                DealWithIconFolder(entryDestPath);
             }
         }
     }
@@ -2124,11 +2201,11 @@ public class ScriptRepoUpdater : Singleton<ScriptRepoUpdater>
             {
                 var uiMessageBox = new Wpf.Ui.Controls.MessageBox
                 {
-                    Title = "脚本订阅",
+                    Title = "Script Subscription",
                     Content =
-                        $"检测到{(formClipboard ? "剪切板上存在" : "")}脚本订阅链接，解析后需要导入的脚本为：{pathJson}。\n是否导入并覆盖此文件或者文件夹下的脚本？",
-                    CloseButtonText = "关闭",
-                    PrimaryButtonText = "确认导入",
+                        $"Detected script subscription link{(formClipboard ? " in clipboard" : "")}; script to import: {pathJson}.\nImport and overwrite scripts in this file or folder?",
+                    CloseButtonText = "Close",
+                    PrimaryButtonText = "Confirm Import",
                     Owner = Application.Current.MainWindow,
                     WindowStartupLocation = WindowStartupLocation.CenterOwner,
                 };
@@ -2278,6 +2355,8 @@ public class ScriptRepoUpdater : Singleton<ScriptRepoUpdater>
 
         //顶层目录订阅时，展开 "pathing" 等顶层路径为具体子目录
         List<string> newPaths = ExpandTopLevelPaths(paths, repoPath);
+        var clearedTargets = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var importedAny = false;
 
         // 从 Git 仓库检出文件到用户文件夹
         foreach (var path in newPaths)
@@ -2285,7 +2364,9 @@ public class ScriptRepoUpdater : Singleton<ScriptRepoUpdater>
             var (first, remainingPath) = GetFirstFolderAndRemainingPath(path);
             if (PathMapper.TryGetValue(first, out var userPath))
             {
-                var destPath = Path.Combine(userPath, remainingPath);
+                var rawDestPath = Path.Combine(userPath, remainingPath);
+                var translateToEnglish = string.Equals(first, "pathing", StringComparison.OrdinalIgnoreCase);
+                var destPath = ResolveEffectiveDestPath(first, userPath, remainingPath);
 
                 // 备份需要保存的文件
                 List<string> backupFiles = new List<string>();
@@ -2294,18 +2375,19 @@ public class ScriptRepoUpdater : Singleton<ScriptRepoUpdater>
                     backupFiles = BackupScriptFiles(path, repoPath);
                 }
 
-                // 如果目标路径存在，先删除
-                if (Directory.Exists(destPath))
+                // 如果目标路径存在，先删除（兼容中文旧目录及英文译名目录）
+                if (clearedTargets.Add(rawDestPath))
                 {
-                    DirectoryHelper.DeleteDirectoryWithReadOnlyCheck(destPath);
+                    DeleteExistingTarget(rawDestPath);
                 }
-                else if (File.Exists(destPath))
+                if (!string.Equals(destPath, rawDestPath, StringComparison.OrdinalIgnoreCase)
+                    && clearedTargets.Add(destPath))
                 {
-                    File.Delete(destPath);
+                    DeleteExistingTarget(destPath);
                 }
 
                 // 从 Git 仓库检出文件或目录
-                CheckoutPath(repoPath, path, destPath);
+                CheckoutPath(repoPath, path, destPath, translateToEnglish);
 
                 // 图标处理（仅对目录）
                 if (Directory.Exists(destPath))
@@ -2325,13 +2407,18 @@ public class ScriptRepoUpdater : Singleton<ScriptRepoUpdater>
                     ResolveScriptDependencies(repoPath, destPath);
                 }
 
-                UpdateSubscribedScriptPaths();
-                Toast.Success("脚本订阅链接导入完成");
+                importedAny = true;
             }
             else
             {
                 Toast.Warning($"未知的脚本路径：{path}");
             }
+        }
+
+        if (importedAny)
+        {
+            UpdateSubscribedScriptPaths();
+            Toast.Success("脚本订阅链接导入完成");
         }
     }
 
@@ -2506,8 +2593,10 @@ public class ScriptRepoUpdater : Singleton<ScriptRepoUpdater>
                 continue;
 
             var (_, remainingPath) = GetFirstFolderAndRemainingPath(path);
-            var userPath = Path.Combine(PathMapper[root], remainingPath);
-            if (!Directory.Exists(userPath) && !File.Exists(userPath))
+            var rawUserPath = Path.Combine(PathMapper[root], remainingPath);
+            var effectiveUserPath = ResolveEffectiveDestPath(root, PathMapper[root], remainingPath);
+            if (!Directory.Exists(rawUserPath) && !File.Exists(rawUserPath)
+                && !Directory.Exists(effectiveUserPath) && !File.Exists(effectiveUserPath))
                 continue;
 
             // 检查是否已被父路径覆盖
@@ -2627,23 +2716,33 @@ public class ScriptRepoUpdater : Singleton<ScriptRepoUpdater>
             .ToList());
     }
 
-    private void CopyDirectory(string sourceDir, string destDir)
+    private void CopyDirectory(string sourceDir, string destDir, bool translateToEnglish = false)
     {
         // 创建目标目录
         Directory.CreateDirectory(destDir);
 
+        var usedNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
         // 拷贝文件
         foreach (var file in Directory.GetFiles(sourceDir))
         {
-            var destFile = Path.Combine(destDir, Path.GetFileName(file));
-            File.Copy(file, destFile, true);
+            var fileName = Path.GetFileName(file);
+            var targetFileName = translateToEnglish
+                ? PathingNameTranslator.TranslatePathSegment(fileName, isFile: true)
+                : fileName;
+            var destFile = ResolveUniqueChildPath(destDir, targetFileName, usedNames, isDirectory: false);
+            CopyFileWithOptionalTranslation(file, destFile, translateToEnglish);
         }
 
         // 拷贝子目录
         foreach (var dir in Directory.GetDirectories(sourceDir))
         {
-            var destSubDir = Path.Combine(destDir, Path.GetFileName(dir));
-            CopyDirectory(dir, destSubDir);
+            var dirName = Path.GetFileName(dir);
+            var targetDirName = translateToEnglish
+                ? PathingNameTranslator.TranslatePathSegment(dirName, isFile: false)
+                : dirName;
+            var destSubDir = ResolveUniqueChildPath(destDir, targetDirName, usedNames, isDirectory: true);
+            CopyDirectory(dir, destSubDir, translateToEnglish);
             // 图标处理
             DealWithIconFolder(destSubDir);
         }

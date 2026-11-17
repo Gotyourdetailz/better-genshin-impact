@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using BetterGenshinImpact.GameTask.Common;
+using BetterGenshinImpact.Service.I18n;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 
@@ -67,9 +68,19 @@ public class JsonMerger
     public static JObject? GetRefFile(JObject jObject, string filePath)
     {
         string refValue = jObject["ref"]?.ToString() ?? string.Empty;
-        if (refValue!=string.Empty)
+        if (refValue != string.Empty)
         {
-            string newfile=Path.Combine(Path.GetDirectoryName(filePath),refValue);
+            string baseDir = Path.GetDirectoryName(filePath) ?? string.Empty;
+            string newfile = Path.Combine(baseDir, refValue);
+            if (!File.Exists(newfile) && !Directory.Exists(newfile))
+            {
+                var translatedRef = PathingNameTranslator.TranslateRelativePath(refValue);
+                var translatedPath = Path.Combine(baseDir, translatedRef);
+                if (File.Exists(translatedPath) || Directory.Exists(translatedPath))
+                {
+                    newfile = translatedPath;
+                }
+            }
             return GetCtrJObject(newfile);
         }
         //TaskControl.Logger.LogInformation($"路径追踪匹配控制文件：{filePath}");
@@ -132,7 +143,18 @@ public class JsonMerger
         {
             foreach (JToken item in jsonList)
             {
-                if (item["name"]?.ToString() == name)
+                var itemName = item["name"]?.ToString();
+                if (string.IsNullOrEmpty(itemName))
+                {
+                    continue;
+                }
+
+                var isMatch = string.Equals(itemName, name, StringComparison.Ordinal)
+                              || string.Equals(
+                                  PathingNameTranslator.TranslatePathSegment(itemName, isFile: true),
+                                  name,
+                                  StringComparison.OrdinalIgnoreCase);
+                if (isMatch)
                 {
                     JToken cover = item["cover"];
                     if (cover != null && cover.Type == JTokenType.Object)

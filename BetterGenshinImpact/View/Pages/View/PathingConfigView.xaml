@@ -66,14 +66,26 @@
                                                   Margin="0,0,10,5"
                                                   HorizontalAlignment="Left"
                                                   ItemsSource="{Binding Source={x:Static local:ConditionDefinitions.PartySubjects}}"
-                                                  SelectedItem="{Binding Subject, Mode=TwoWay}" />
+                                                  SelectedItem="{Binding Subject, Mode=TwoWay}">
+                                            <ComboBox.ItemTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Text="{i18n:TValue}" />
+                                                </DataTemplate>
+                                            </ComboBox.ItemTemplate>
+                                        </ComboBox>
 
                                         <!--  包含  -->
                                         <ComboBox MinWidth="80"
                                                   Margin="0,0,10,5"
                                                   HorizontalAlignment="Left"
                                                   ItemsSource="{Binding Definition.PredicateOptions}"
-                                                  SelectedItem="{Binding Predicate, Mode=TwoWay}" />
+                                                  SelectedItem="{Binding Predicate, Mode=TwoWay}">
+                                            <ComboBox.ItemTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Text="{i18n:TValue}" />
+                                                </DataTemplate>
+                                            </ComboBox.ItemTemplate>
+                                        </ComboBox>
 
                                         <!--  搜索输入框  -->
                                         <!--  控件颜色及交互状态跟随 WPF-UI 全局主题资源  -->
@@ -133,14 +145,26 @@
                                                   Margin="0,0,10,5"
                                                   HorizontalAlignment="Left"
                                                   ItemsSource="{Binding Source={x:Static local:ConditionDefinitions.AvatarSubjects}}"
-                                                  SelectedItem="{Binding Subject, Mode=TwoWay}" />
+                                                  SelectedItem="{Binding Subject, Mode=TwoWay}">
+                                            <ComboBox.ItemTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Text="{i18n:TValue}" />
+                                                </DataTemplate>
+                                            </ComboBox.ItemTemplate>
+                                        </ComboBox>
 
                                         <!--  包含  -->
                                         <ComboBox MinWidth="80"
                                                   Margin="0,0,10,5"
                                                   HorizontalAlignment="Left"
                                                   ItemsSource="{Binding Definition.PredicateOptions}"
-                                                  SelectedItem="{Binding Predicate}" />
+                                                  SelectedItem="{Binding Predicate}">
+                                            <ComboBox.ItemTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Text="{i18n:TValue}" />
+                                                </DataTemplate>
+                                            </ComboBox.ItemTemplate>
+                                        </ComboBox>
 
                                         <!--  搜索输入框  -->
                                         <Grid Width="300" MinWidth="300">
@@ -160,7 +184,13 @@
                                                   Margin="0,0,10,0"
                                                   HorizontalAlignment="Left"
                                                   ItemsSource="{Binding Source={x:Static local:ConditionDefinitions.AvatarResultList}}"
-                                                  SelectedItem="{Binding Result}" />
+                                                  SelectedItem="{Binding Result}">
+                                            <ComboBox.ItemTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Text="{i18n:TValue}" />
+                                                </DataTemplate>
+                                            </ComboBox.ItemTemplate>
+                                        </ComboBox>
 
                                         <!--  清除按钮  -->
                                         <Button

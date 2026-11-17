@@ -58,7 +58,7 @@ public sealed class ChildSessionService : IDisposable
 
     public event EventHandler? AudioReconnectCompleted;
 
-    public string StatusText { get; private set; } = "桌面分身尚未启动";
+    public string StatusText { get; private set; } = "Virtual Desktop has not started yet";
 
     public bool IsDesktopVisible => _desktopWindow?.IsVisible == true;
 
@@ -111,8 +111,33 @@ public sealed class ChildSessionService : IDisposable
     /// <summary>
     /// 最近一次主动环境检查的结论文本，供界面提示与问题排查使用。
     /// </summary>
-    public string EnvironmentIssueSummary =>
-        ChildSessionEnvironmentCheck.BuildSummary(_environmentIssues);
+    public string EnvironmentIssueSummary
+    {
+        get
+        {
+            if (_environmentIssues.Count == 0)
+            {
+                return string.Empty;
+            }
+
+            var sb = new StringBuilder();
+            for (var i = 0; i < _environmentIssues.Count; i++)
+            {
+                if (i > 0)
+                {
+                    sb.AppendLine();
+                }
+
+                var issue = _environmentIssues[i];
+                sb.Append("- ")
+                  .Append(BetterGenshinImpact.Service.I18n.I18nService.Instance.Translate(issue.Title))
+                  .Append(": ")
+                  .Append(BetterGenshinImpact.Service.I18n.I18nService.Instance.Translate(issue.Summary));
+            }
+
+            return sb.ToString();
+        }
+    }
 
     public bool HasActiveChildSession()
     {
@@ -171,7 +196,7 @@ public sealed class ChildSessionService : IDisposable
 
             try
             {
-                ConnectCore("正在启动 BetterGI 桌面分身");
+                ConnectCore("Starting BetterGI Virtual Desktop");
             }
             catch
             {
@@ -219,7 +244,7 @@ public sealed class ChildSessionService : IDisposable
     {
         ThrowIfDisposed();
         _desktopWindow?.Hide();
-        RefreshState("已隐藏 BetterGI 桌面分身，RDP 连接保持不变");
+        RefreshState("Hid BetterGI Virtual Desktop window; RDP connection stays active");
     }
 
     public void ShowChildSessionDesktop()
@@ -228,7 +253,7 @@ public sealed class ChildSessionService : IDisposable
         var window = EnsureDesktopWindow();
         ShowDesktopWindow(window);
         window.RdpHost.SendShowDesktopShortcut();
-        RefreshState("已向 BetterGI 桌面分身发送 Win+D");
+        RefreshState("Sent Win+D to BetterGI Virtual Desktop");
     }
 
     public void ShowChildSessionTaskView()
@@ -237,7 +262,7 @@ public sealed class ChildSessionService : IDisposable
         var window = EnsureDesktopWindow();
         ShowDesktopWindow(window);
         window.RdpHost.SendTaskViewShortcut();
-        RefreshState("已向 BetterGI 桌面分身发送 Win+Tab");
+        RefreshState("Sent Win+Tab to BetterGI Virtual Desktop");
     }
 
     public void SetSmartSizing(bool enabled)
@@ -245,21 +270,21 @@ public sealed class ChildSessionService : IDisposable
         ThrowIfDisposed();
         EnsureDesktopWindow().RdpHost.SetSmartSizing(enabled);
         _config.SmartSizingEnabled = enabled;
-        RefreshState(enabled ? "窗口显示模式已切换为自适应" : "窗口显示模式已切换为 1:1");
+        RefreshState(enabled ? "Window display mode switched to Fit" : "Window display mode switched to 1:1");
     }
 
     public void SetKeepAspectRatio(bool enabled)
     {
         ThrowIfDisposed();
         _config.KeepAspectRatio = enabled;
-        RefreshState(enabled ? "桌面分身窗口将保持宽高比" : "桌面分身窗口不再保持宽高比");
+        RefreshState(enabled ? "Virtual Desktop window will lock aspect ratio" : "Virtual Desktop window unlocked aspect ratio");
     }
 
     public void SetTopmost(bool enabled)
     {
         ThrowIfDisposed();
         _config.TopmostEnabled = enabled;
-        RefreshState(enabled ? "桌面分身窗口已置顶" : "桌面分身窗口已取消置顶");
+        RefreshState(enabled ? "Virtual Desktop window pinned Always on Top" : "Virtual Desktop window unpinned from top");
     }
 
     public bool SetSendSystemShortcutsToRemote(bool enabled)
@@ -274,11 +299,11 @@ public sealed class ChildSessionService : IDisposable
         _config.SendSystemShortcutsToRemote = enabled;
         var window = EnsureDesktopWindow();
         window.RdpHost.SetSendSystemShortcutsToRemote(enabled);
-        var target = enabled ? "桌面分身" : "本机";
+        var target = enabled ? "Virtual Desktop" : "Local PC";
         return ReconnectForRdpSettingChange(
             window,
             RdpSettingChange.SystemShortcuts,
-            $"系统组合键已改为在{target}生效");
+            $"System shortcut target changed to {target}");
     }
 
     public bool SetAudioMuted(bool muted)
@@ -295,7 +320,7 @@ public sealed class ChildSessionService : IDisposable
         return ReconnectForRdpSettingChange(
             window,
             RdpSettingChange.Audio,
-            muted ? "桌面分身声音已关闭" : "桌面分身声音已开启");
+            muted ? "Virtual Desktop audio muted" : "Virtual Desktop audio unmuted");
     }
 
     public void SetGameMouseModeEnabled(bool enabled)
@@ -304,8 +329,8 @@ public sealed class ChildSessionService : IDisposable
         _instanceService.SetGameMouseModeEnabled(enabled);
         _config.GameMouseModeEnabled = enabled;
         RefreshState(enabled
-            ? "已切换为游戏鼠标模式"
-            : "已切换为普通鼠标模式");
+            ? "Switched to Game Mouse mode"
+            : "Switched to Standard Mouse mode");
     }
 
     public void SetWatchModeEnabled(bool enabled)
@@ -314,8 +339,8 @@ public sealed class ChildSessionService : IDisposable
         _config.WatchModeEnabled = enabled;
         _desktopWindow?.RdpHost.SetInputBlocked(enabled);
         RefreshState(enabled
-            ? "已进入观看模式，本机鼠标和键盘不会进入桌面分身"
-            : "已退出观看模式，可以操作桌面分身");
+            ? "Entered View-Only mode; local mouse and keyboard will not pass into Virtual Desktop"
+            : "Exited View-Only mode; Virtual Desktop input is active");
     }
 
     public Task LaunchBetterGiAsync()
@@ -351,10 +376,10 @@ public sealed class ChildSessionService : IDisposable
         await _launchSemaphore.WaitAsync();
         try
         {
-            RefreshState($"正在以管理员权限启动 {System.IO.Path.GetFileName(executablePath)}");
+            RefreshState($"Launching {System.IO.Path.GetFileName(executablePath)} as administrator");
             await ChildSessionProcessLauncher.LaunchElevatedAsync(childSessionId, executablePath);
             RefreshState(
-                $"已在桌面分身（会话 {childSessionId}）中以管理员权限启动 {System.IO.Path.GetFileName(executablePath)}");
+                $"Launched {System.IO.Path.GetFileName(executablePath)} as administrator in Virtual Desktop (Session {childSessionId})");
         }
         finally
         {
@@ -375,13 +400,13 @@ public sealed class ChildSessionService : IDisposable
         try
         {
             TryDisconnectRdpHost();
-            RefreshState("正在断开 RDP 并注销 BetterGI 桌面分身");
+            RefreshState("Disconnecting RDP and signing out of BetterGI Virtual Desktop");
 
             var terminatedSessionId = await Task.Run(ChildSessionNativeMethods.TerminateChildSession);
             _desktopWindow?.Hide();
             RefreshState(terminatedSessionId is null
-                ? "当前没有桌面分身会话，桌面分身窗口已隐藏"
-                : $"桌面分身会话 {terminatedSessionId.Value} 已注销，桌面分身窗口已隐藏");
+                ? "No active Virtual Desktop session; Virtual Desktop window hidden"
+                : $"Virtual Desktop session {terminatedSessionId.Value} signed out and window hidden");
         }
         finally
         {
@@ -409,16 +434,16 @@ public sealed class ChildSessionService : IDisposable
 
             var connectionText = ConnectedState switch
             {
-                0 => "未连接",
-                1 => "已连接",
-                2 => "正在连接",
-                _ => $"未知连接状态 {ConnectedState}"
+                0 => "Disconnected",
+                1 => "Connected",
+                2 => "Connecting",
+                _ => $"Unknown connection state {ConnectedState}"
             };
-            var sessionText = ChildSessionId?.ToString() ?? "无";
+            var sessionText = ChildSessionId?.ToString() ?? "None";
             var mainText = _lastOperationMessage ?? connectionText;
 
             StatusText =
-                $"{mainText} | RDP：{connectionText} | 桌面分身会话：{sessionText} | 功能已启用：{enabled}";
+                $"{mainText} | RDP: {connectionText} | Virtual Desktop Session: {sessionText} | Enabled: {enabled}";
         }
         catch (Exception exception) when (IsExpectedChildSessionException(exception))
         {
@@ -556,11 +581,11 @@ public sealed class ChildSessionService : IDisposable
         {
             var childSessionId = GetRequiredChildSessionId();
             RefreshState(isAutomatic
-                ? "桌面分身已加载，正在自动以管理员权限启动 BetterGI"
-                : "正在以管理员权限启动 BetterGI");
+                ? "Virtual Desktop loaded; auto-launching BetterGI as administrator"
+                : "Launching BetterGI as administrator");
             await ChildSessionProcessLauncher.LaunchBetterGiAsync(childSessionId);
             RefreshState(
-                $"已在桌面分身（会话 {childSessionId}）中以管理员权限启动 BetterGI");
+                $"Launched BetterGI as administrator in Virtual Desktop (Session {childSessionId})");
         }
         finally
         {
@@ -576,7 +601,7 @@ public sealed class ChildSessionService : IDisposable
         var childSessionId = ChildSessionNativeMethods.TryGetChildSessionId();
         if (childSessionId is null)
         {
-            throw new InvalidOperationException("当前没有可用的桌面分身，请先启动桌面分身。");
+            throw new InvalidOperationException("No Virtual Desktop session is currently available. Please start Virtual Desktop first.");
         }
 
         return childSessionId.Value;
@@ -594,7 +619,7 @@ public sealed class ChildSessionService : IDisposable
         foreach (var issue in _environmentIssues)
         {
             _logger.LogWarning(
-                "桌面分身环境检查：{IssueTitle}。{IssueSummary}",
+                "Virtual Desktop environment check: {IssueTitle}. {IssueSummary}",
                 issue.Title,
                 issue.Summary);
         }
@@ -664,7 +689,7 @@ public sealed class ChildSessionService : IDisposable
             _pendingRdpSettingChanges = RdpSettingChange.None;
             _rdpSettingsReconnectRetriesRemaining = 0;
             _rdpSettingsReconnectRetryInProgress = false;
-            RefreshState("自动重新连接完成，RDP 设置已生效");
+            RefreshState("Auto-reconnect completed; RDP settings applied");
 
             if (completedSettingChanges.HasFlag(RdpSettingChange.SystemShortcuts))
             {
@@ -678,7 +703,7 @@ public sealed class ChildSessionService : IDisposable
         }
         else
         {
-            RefreshState("桌面分身登录初始化完成");
+            RefreshState("Virtual Desktop logon initialization completed");
         }
 
         if (!_autoLaunchBetterGiPending)
@@ -703,7 +728,7 @@ public sealed class ChildSessionService : IDisposable
         }
         catch (Exception exception) when (IsExpectedChildSessionException(exception))
         {
-            RefreshState($"自动启动 BetterGI 失败：{exception.GetBaseException().Message}");
+            RefreshState($"Failed to auto-launch BetterGI: {exception.GetBaseException().Message}");
         }
     }
 
@@ -719,16 +744,16 @@ public sealed class ChildSessionService : IDisposable
         var retryDelay = TimeSpan.FromSeconds(1 << retryNumber);
 
         _logger.LogWarning(
-            "RDP 设置切换后的自动重连失败，将在 {RetryDelaySeconds} 秒后进行第 {RetryNumber} 次重试。"
-            + "错误：{ErrorMessage}，错误代码：{ErrorCode}，扩展错误代码：{ExtendedErrorCode}",
+            "RDP auto-reconnect after setting change failed; retry #{RetryNumber} in {RetryDelaySeconds}s. "
+            + "Error: {ErrorMessage}, ErrorCode: {ErrorCode}, ExtendedErrorCode: {ExtendedErrorCode}",
             retryDelay.TotalSeconds,
             retryNumber,
             firstFailure.Message,
             firstFailure.ErrorCode,
             firstFailure.ExtendedErrorCode);
         RefreshState(
-            $"RDP 自动重连暂未成功，{retryDelay.TotalSeconds:0} 秒后重试"
-            + $"（{retryNumber}/{RdpSettingsReconnectRetryCount}）");
+            $"RDP auto-reconnect did not succeed yet; retrying in {retryDelay.TotalSeconds:0}s"
+            + $" ({retryNumber}/{RdpSettingsReconnectRetryCount})");
 
         try
         {
@@ -739,7 +764,7 @@ public sealed class ChildSessionService : IDisposable
             }
 
             RefreshState(
-                $"正在重试 RDP 自动连接（{retryNumber}/{RdpSettingsReconnectRetryCount}）");
+                $"Retrying RDP auto-reconnect ({retryNumber}/{RdpSettingsReconnectRetryCount})");
             _rdpSettingsReconnectRetryInProgress = false;
             EnsureDesktopWindow().RdpHost.ReconnectToChildSession(DefaultDesktopSize);
         }
@@ -753,7 +778,7 @@ public sealed class ChildSessionService : IDisposable
                 ? comException.ErrorCode
                 : 0;
             retryFailure = new ChildSessionConnectionFailedEventArgs(
-                $"RDP 自动重新连接失败：{actualException.Message}",
+                $"RDP automatic reconnection failed: {actualException.Message}",
                 errorCode);
         }
         finally
@@ -776,16 +801,16 @@ public sealed class ChildSessionService : IDisposable
         var retryDelay = TimeSpan.FromSeconds(1 << (retryNumber - 1));
 
         _logger.LogWarning(
-            "桌面分身首次初始化连接失败，将在 {RetryDelaySeconds} 秒后进行第 {RetryNumber} 次重试。"
-            + "错误：{ErrorMessage}，错误代码：{ErrorCode}，扩展错误代码：{ExtendedErrorCode}",
+            "Virtual Desktop initial connection failed; retry #{RetryNumber} in {RetryDelaySeconds}s. "
+            + "Error: {ErrorMessage}, ErrorCode: {ErrorCode}, ExtendedErrorCode: {ExtendedErrorCode}",
             retryDelay.TotalSeconds,
             retryNumber,
             firstFailure.Message,
             firstFailure.ErrorCode,
             firstFailure.ExtendedErrorCode);
         RefreshState(
-            $"桌面分身首次初始化尚未完成，{retryDelay.TotalSeconds:0} 秒后自动重试"
-            + $"（{retryNumber}/{InitialConnectionRetryCount}）");
+            $"Virtual Desktop initial connection is not complete yet; auto-retrying in {retryDelay.TotalSeconds:0}s"
+            + $" ({retryNumber}/{InitialConnectionRetryCount})");
 
         try
         {
@@ -802,7 +827,7 @@ public sealed class ChildSessionService : IDisposable
             }
 
             RefreshState(
-                $"正在重试桌面分身连接（{retryNumber}/{InitialConnectionRetryCount}）");
+                $"Retrying Virtual Desktop connection ({retryNumber}/{InitialConnectionRetryCount})");
             _connectionRetryInProgress = false;
             // OnLogonError 触发后 ActiveX 可能仍处于连接状态，必须先断开再重连。
             // 否则这里直接退出会丢失已捕获的真实错误，最终只剩外层连接超时。
@@ -818,7 +843,7 @@ public sealed class ChildSessionService : IDisposable
                 ? comException.ErrorCode
                 : 0;
             retryFailure = new ChildSessionConnectionFailedEventArgs(
-                $"重试桌面分身连接失败：{actualException.Message}",
+                $"Failed to retry Virtual Desktop connection: {actualException.Message}",
                 errorCode);
         }
         finally
@@ -848,7 +873,7 @@ public sealed class ChildSessionService : IDisposable
         _initialConnectionRetriesRemaining = 0;
         _connectionAttemptCompletionSource?.TrySetResult(false);
         _logger.LogError(
-            "桌面分身 RDP 连接失败：{ErrorMessage}，错误代码：{ErrorCode}，扩展错误代码：{ExtendedErrorCode}",
+            "Virtual Desktop RDP connection failed: {ErrorMessage}, ErrorCode: {ErrorCode}, ExtendedErrorCode: {ExtendedErrorCode}",
             diagnosed.Message,
             diagnosed.ErrorCode,
             diagnosed.ExtendedErrorCode);
@@ -862,19 +887,19 @@ public sealed class ChildSessionService : IDisposable
     private ChildSessionConnectionFailedEventArgs CreateConnectionTimeoutFailure()
     {
         var timeoutMessage =
-            $"桌面分身连接及登录初始化未能在 {ConnectionTimeout.TotalSeconds:0} 秒内完成。";
+            $"Virtual Desktop connection and sign-in initialization did not complete within {ConnectionTimeout.TotalSeconds:0} seconds.";
         var lastDiagnostic =
             _desktopWindow?.RdpHost.LastConnectionDiagnostic
             ?? _lastConnectionFailure;
         if (lastDiagnostic is null)
         {
             return new ChildSessionConnectionFailedEventArgs(
-                $"{timeoutMessage}\n\nRDP ActiveX 未报告更具体的失败原因。",
+                $"{timeoutMessage}\n\nRDP ActiveX did not report a more specific failure reason.",
                 ErrorTimeout);
         }
 
         return new ChildSessionConnectionFailedEventArgs(
-            $"{timeoutMessage}\n\nRDP ActiveX 最后报告：\n{lastDiagnostic.Message}",
+            $"{timeoutMessage}\n\nLast RDP ActiveX report:\n{lastDiagnostic.Message}",
             lastDiagnostic.ErrorCode,
             lastDiagnostic.ExtendedErrorCode);
     }
@@ -892,15 +917,27 @@ public sealed class ChildSessionService : IDisposable
         {
             builder.AppendLine().AppendLine();
             builder.Append(
-                "诊断：当前没有可用的桌面分身会话，说明 Windows 未能建立 RDP 会话。"
-                + "该状态本身无法确定原因——系统无法创建会话与凭据未通过验证都会得到这个结果，"
-                + "请结合上面的 RDP ActiveX 错误信息一并判断。");
+                "Diagnosis: No Virtual Desktop session is available, meaning Windows could not establish the RDP session. "
+                + "This state alone cannot determine the exact cause — both session creation failure and failed credential validation produce this result. "
+                + "Please check the RDP ActiveX error message above together with diagnostics.");
         }
 
         if (_environmentIssues.Count > 0)
         {
             builder.AppendLine().AppendLine();
-            builder.Append(ChildSessionEnvironmentCheck.BuildSummary(_environmentIssues));
+            for (var i = 0; i < _environmentIssues.Count; i++)
+            {
+                if (i > 0)
+                {
+                    builder.AppendLine();
+                }
+
+                var issue = _environmentIssues[i];
+                builder.Append("- ")
+                       .Append(BetterGenshinImpact.Service.I18n.I18nService.Instance.Translate(issue.Title))
+                       .Append(": ")
+                       .Append(BetterGenshinImpact.Service.I18n.I18nService.Instance.Translate(issue.Summary));
+            }
         }
 
         return builder.ToString();
@@ -946,7 +983,7 @@ public sealed class ChildSessionService : IDisposable
         RefreshState();
         if (window.RdpHost.ConnectedState == 0 && ChildSessionId is null)
         {
-            RefreshState($"{operationMessage}，将在下次 RDP 连接后应用");
+            RefreshState($"{operationMessage}; will apply on next RDP connection");
             return false;
         }
 
@@ -968,7 +1005,7 @@ public sealed class ChildSessionService : IDisposable
             throw;
         }
 
-        RefreshState($"{operationMessage}，正在自动重新连接 RDP");
+        RefreshState($"{operationMessage}; automatically reconnecting RDP");
         return true;
     }
 

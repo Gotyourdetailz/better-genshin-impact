@@ -78,38 +78,38 @@ internal sealed class RdpActiveXHost : AxHost
         SetComProperty(client, "DesktopWidth", width);
         SetComProperty(client, "DesktopHeight", height);
         SetComProperty(client, "ColorDepth", 32);
-        SetComProperty(client, "ConnectingText", "正在创建 BetterGI 桌面分身...");
-        SetComProperty(client, "DisconnectedText", "BetterGI 桌面分身已断开");
+        SetComProperty(client, "ConnectingText", "Creating BetterGI Virtual Desktop...");
+        SetComProperty(client, "DisconnectedText", "BetterGI Virtual Desktop disconnected");
 
         var securedSettings = GetComProperty(client, "SecuredSettings2")
-            ?? throw new COMException("RDP ActiveX 未返回 SecuredSettings2。");
-        RunComStep("设置系统组合键发送位置", () =>
+            ?? throw new COMException("RDP ActiveX did not return SecuredSettings2.");
+        RunComStep("Configure system shortcut redirection", () =>
             SetComProperty(
                 securedSettings,
                 "KeyboardHookMode",
                 _sendSystemShortcutsToRemote ? 1 : 0));
-        RunComStep("设置远程音频重定向", () =>
+        RunComStep("Configure remote audio redirection", () =>
             SetComProperty(
                 securedSettings,
                 "AudioRedirectionMode",
                 _audioMuted ? DisableRemoteAudio : RedirectAudioToClient));
 
         var advancedSettings = GetComProperty(client, "AdvancedSettings7")
-            ?? throw new COMException("RDP ActiveX 未返回 AdvancedSettings7。");
-        RunComStep("设置 RDP 连接端口", () =>
+            ?? throw new COMException("RDP ActiveX did not return AdvancedSettings7.");
+        RunComStep("Configure RDP connection port", () =>
             SetComProperty(
                 advancedSettings,
                 "RDPPort",
                 ChildSessionNativeMethods.GetConfiguredRdpPort()));
-        RunComStep("启用 CredSSP", () =>
+        RunComStep("Enable CredSSP", () =>
             SetComProperty(advancedSettings, "EnableCredSspSupport", true));
-        RunComStep("启用远程 Windows 键", () =>
+        RunComStep("Enable remote Windows key", () =>
             SetComProperty(advancedSettings, "EnableWindowsKey", 1));
-        RunComStep("设置显示缩放", () =>
+        RunComStep("Configure display scaling", () =>
             SetComProperty(advancedSettings, "SmartSizing", _smartSizingEnabled));
 
         object connectToChildSession = true;
-        RunComStep("设置 ConnectToChildSession", () =>
+        RunComStep("Configure ConnectToChildSession", () =>
         {
             var extendedSettings = (IMsRdpExtendedSettings)client;
             TrySetExtendedProperty(extendedSettings, "EnableZoom", true);
@@ -122,7 +122,7 @@ internal sealed class RdpActiveXHost : AxHost
         _disconnectRequested = false;
         try
         {
-            RunComStep("调用 RDP Connect()", () => InvokeComMethod(client, "Connect"));
+            RunComStep("Invoke RDP Connect()", () => InvokeComMethod(client, "Connect"));
         }
         catch
         {
@@ -166,8 +166,8 @@ internal sealed class RdpActiveXHost : AxHost
         }
 
         var advancedSettings = GetComProperty(GetRequiredOcx(), "AdvancedSettings7")
-            ?? throw new COMException("RDP ActiveX 未返回 AdvancedSettings7。");
-        RunComStep("设置显示缩放", () =>
+            ?? throw new COMException("RDP ActiveX did not return AdvancedSettings7.");
+        RunComStep("Configure display scaling", () =>
             SetComProperty(advancedSettings, "SmartSizing", enabled));
     }
 
@@ -303,7 +303,7 @@ internal sealed class RdpActiveXHost : AxHost
         if (ConnectedState != 1)
         {
             throw new InvalidOperationException(
-                $"桌面分身尚未完全连接，无法发送 {displayName}。");
+                $"Virtual Desktop is not fully connected yet; cannot send {displayName}.");
         }
 
         // 组合键由调用方显式发起，发送期间短暂恢复输入窗口，发完立刻回到屏蔽状态。
@@ -316,10 +316,10 @@ internal sealed class RdpActiveXHost : AxHost
         {
             if (!ChildSessionNativeMethods.TryFocusRdpInputWindow(Handle))
             {
-                throw new InvalidOperationException("无法将键盘焦点切换到桌面分身。");
+                throw new InvalidOperationException("Unable to focus keyboard input onto Virtual Desktop.");
             }
 
-            RunComStep($"向 Child Session 发送 {displayName}", () => SendKeyStrokes(strokes));
+            RunComStep($"Send {displayName} to Child Session", () => SendKeyStrokes(strokes));
         }
         finally
         {
@@ -397,11 +397,11 @@ internal sealed class RdpActiveXHost : AxHost
             disconnectReason,
             extendedDisconnectReason);
         var failureTitle = failedWhileConnecting
-            ? "RDP 连接失败"
-            : "RDP 连接意外断开";
+            ? "RDP connection failed"
+            : "RDP connection disconnected unexpectedly";
         var message = string.IsNullOrWhiteSpace(errorDescription)
-            ? $"{failureTitle}。\n\n断开原因：{FormatErrorCode(disconnectReason)}\n扩展原因：{FormatErrorCode(extendedDisconnectReason)}"
-            : $"{failureTitle}：{errorDescription}\n\n断开原因：{FormatErrorCode(disconnectReason)}\n扩展原因：{FormatErrorCode(extendedDisconnectReason)}";
+            ? $"{failureTitle}.\n\nDisconnect reason: {FormatErrorCode(disconnectReason)}\nExtended reason: {FormatErrorCode(extendedDisconnectReason)}"
+            : $"{failureTitle}: {errorDescription}\n\nDisconnect reason: {FormatErrorCode(disconnectReason)}\nExtended reason: {FormatErrorCode(extendedDisconnectReason)}";
 
         ReportConnectionFailure(
             message,
@@ -433,7 +433,7 @@ internal sealed class RdpActiveXHost : AxHost
                 ? comException.ErrorCode
                 : 0;
             ReportConnectionFailure(
-                $"RDP 自动重新连接失败：{actualException.Message}",
+                $"RDP automatic reconnection failed: {actualException.Message}",
                 errorCode);
         }
     }
@@ -447,7 +447,7 @@ internal sealed class RdpActiveXHost : AxHost
         }
 
         ReportConnectionFailure(
-            $"RDP 客户端发生致命错误：{GetFatalErrorDescription(errorCode)}\n\n错误代码：{FormatErrorCode(errorCode)}",
+            $"RDP client fatal error: {GetFatalErrorDescription(errorCode)}\n\nError code: {FormatErrorCode(errorCode)}",
             errorCode);
     }
 
@@ -459,7 +459,7 @@ internal sealed class RdpActiveXHost : AxHost
         }
 
         var message =
-            $"RDP 登录阶段：{GetLogonErrorDescription(errorCode)}\n\n错误代码：{FormatErrorCode(errorCode)}";
+            $"RDP sign-in phase: {GetLogonErrorDescription(errorCode)}\n\nError code: {FormatErrorCode(errorCode)}";
         if (IsNonTerminalLogonEvent(errorCode))
         {
             _lastConnectionDiagnostic =
@@ -469,7 +469,7 @@ internal sealed class RdpActiveXHost : AxHost
 
         _connectionAttemptInProgress = false;
         ReportConnectionFailure(
-            message.Replace("RDP 登录阶段：", "RDP 登录失败：", StringComparison.Ordinal),
+            message.Replace("RDP sign-in phase:", "RDP sign-in failed:", StringComparison.Ordinal),
             errorCode);
     }
 
@@ -549,16 +549,16 @@ internal sealed class RdpActiveXHost : AxHost
     {
         return errorCode switch
         {
-            0 => "发生未知错误。",
-            1 => "发生内部错误（1）。",
-            2 => "内存不足。",
-            3 => "无法创建 RDP 窗口。",
-            4 => "发生内部错误（2）。",
-            5 => "RDP 客户端进入了无效状态。",
-            6 => "发生内部错误（4）。",
-            7 => "建立客户端连接时发生不可恢复的错误。",
-            100 => "Windows 套接字初始化失败。",
-            _ => "发生未识别的致命错误。"
+            0 => "An unknown error occurred.",
+            1 => "An internal error occurred (1).",
+            2 => "Out of memory.",
+            3 => "Unable to create the RDP window.",
+            4 => "An internal error occurred (2).",
+            5 => "The RDP client entered an invalid state.",
+            6 => "An internal error occurred (4).",
+            7 => "An unrecoverable error occurred while establishing the client connection.",
+            100 => "Windows Sockets initialization failed.",
+            _ => "An unrecognized fatal error occurred."
         };
     }
 
@@ -566,20 +566,20 @@ internal sealed class RdpActiveXHost : AxHost
     {
         return errorCode switch
         {
-            -7 => "Winlogon 正在显示“拒绝断开现有会话”对话框。",
-            -6 => "Winlogon 正在显示“无权限”对话框。",
-            -5 => "Winlogon 正在显示会话争用选项。",
-            -4 => "Winlogon 正在显示重新连接选项。",
-            -3 => "Winlogon 已静默终止登录。",
-            -1 => "访问被拒绝。",
-            0 => "登录凭据无效。",
-            1 => "密码已过期，必须先修改密码。",
-            2 => "登录或登录后的处理发生错误。",
-            3 => "RDP 客户端正在显示登录警告。",
-            unchecked((int)0xC000006D) => "用户名或身份验证信息无效。",
-            unchecked((int)0xC000006E) => "身份验证受到用户账户限制。",
-            unchecked((int)0xC0000224) => "密码已过期，必须先修改密码。",
-            _ => "登录阶段发生未识别的错误或事件。"
+            -7 => "Winlogon is displaying the \"Refuse to disconnect existing session\" dialog.",
+            -6 => "Winlogon is displaying the \"Access denied / No permission\" dialog.",
+            -5 => "Winlogon is displaying session contention options.",
+            -4 => "Winlogon is displaying reconnection options.",
+            -3 => "Winlogon silently terminated the logon.",
+            -1 => "Access denied.",
+            0 => "Invalid logon credentials.",
+            1 => "Password has expired and must be changed before signing in.",
+            2 => "An error occurred during logon or post-logon processing.",
+            3 => "The RDP client is displaying a logon warning.",
+            unchecked((int)0xC000006D) => "The user name or authentication information is incorrect.",
+            unchecked((int)0xC000006E) => "Authentication failed due to user account restrictions.",
+            unchecked((int)0xC0000224) => "Password has expired and must be changed before signing in.",
+            _ => "An unrecognized error or event occurred during logon."
         };
     }
 
@@ -600,7 +600,7 @@ internal sealed class RdpActiveXHost : AxHost
 
         return GetOcx()
                ?? throw new InvalidOperationException(
-                   "RDP ActiveX 控件尚未完成初始化，无法访问 COM 实例。");
+                   "The RDP ActiveX control has not finished initializing; COM instance cannot be accessed.");
     }
 
     private static object? GetComProperty(object target, string propertyName)
@@ -663,7 +663,7 @@ internal sealed class RdpActiveXHost : AxHost
             if (actualException is COMException comException)
             {
                 throw new COMException(
-                    $"{stepName}失败：{comException.Message}",
+                    $"{stepName} failed: {comException.Message}",
                     comException.ErrorCode);
             }
 

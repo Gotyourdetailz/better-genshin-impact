@@ -9,6 +9,7 @@ using System.Text.Json.Serialization;
 using System.Xml.Linq;
 using BetterGenshinImpact.Core.Script.Utils;
 using BetterGenshinImpact.GameTask.FarmingPlan;
+using BetterGenshinImpact.Service.I18n;
 using BetterGenshinImpact.ViewModel.Pages;
 using Microsoft.Extensions.Logging;
 using BetterGenshinImpact.Model;
@@ -77,13 +78,13 @@ public class PathingTask
         var conditionDefinition = ConditionDefinitions.Definitions["采集物"];
         var materialList = conditionDefinition.ObjectOptions?.ToList() ?? new List<string>();
         
-        //跳过第一个目录，i从1开始,（一级目录必定不是采集物），对比每一个采集物名称 
+        // 跳过第一个目录，i从1开始，（一级目录必定不是采集物），支持中文原名与英文译名文件夹
         for (var i = 1; i < level; i++)
         {
-            var materialName = fileNames[i];
-            if (materialList.Contains(materialName))
+            var resolved = PathingNameTranslator.ResolveMaterialCanonicalKey(fileNames[i], materialList);
+            if (resolved != null)
             {
-                return materialName;
+                return resolved;
             }
         }
         return null;
@@ -103,9 +104,7 @@ public class PathingTask
         // 比较版本号大小 BgiVersion
         if (!string.IsNullOrWhiteSpace(task.Info.BgiVersion) && Global.IsNewVersion(task.Info.BgiVersion))
         {
-            TaskControl.Logger.LogError("地图追踪任务 {Name} 版本号要求 {BgiVersion} 大于当前 BetterGI 版本号 {CurrentVersion} ， 禁止运行，请更新 BetterGI 版本！", task.FileName, task.Info.BgiVersion, Global.Version);
-            TaskControl.Logger.LogError("地图追踪任务 {Name} 版本号要求 {BgiVersion} 大于当前 BetterGI 版本号 {CurrentVersion} ， 禁止运行，请更新 BetterGI 版本！", task.FileName, task.Info.BgiVersion, Global.Version);
-            TaskControl.Logger.LogError("地图追踪任务 {Name} 版本号要求 {BgiVersion} 大于当前 BetterGI 版本号 {CurrentVersion} ， 禁止运行，请更新 BetterGI 版本！", task.FileName, task.Info.BgiVersion, Global.Version);
+            TaskControl.Logger.LogError("Map tracking task {Name} requires version {BgiVersion}, which is newer than current BetterGI {CurrentVersion}. Please update BetterGI.", task.FileName, task.Info.BgiVersion, Global.Version);
             return null;
         }
         return task;

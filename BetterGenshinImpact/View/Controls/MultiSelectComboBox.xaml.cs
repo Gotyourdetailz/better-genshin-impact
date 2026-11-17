@@ -13,6 +13,7 @@ using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
+using BetterGenshinImpact.Service.I18n;
 
 namespace BetterGenshinImpact.View.Controls;
 
@@ -308,7 +309,7 @@ public partial class MultiSelectComboBox : UserControl
 
         SelectionText = selectedTexts.Count == 0
             ? PlaceholderText
-            : string.Join("，", selectedTexts);
+            : string.Join(", ", selectedTexts);
 
         if (SelectionCountTextBlock is not null)
         {
@@ -568,7 +569,8 @@ public partial class MultiSelectComboBox : UserControl
 
     private static string GetDisplayText(object value)
     {
-        return value.ToString() ?? string.Empty;
+        var raw = value?.ToString() ?? string.Empty;
+        return string.IsNullOrEmpty(raw) ? raw : I18nService.Instance.Translate(raw);
     }
 
     private sealed class MultiSelectItem : INotifyPropertyChanged

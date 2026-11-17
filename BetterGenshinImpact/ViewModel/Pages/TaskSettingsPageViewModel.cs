@@ -328,10 +328,10 @@ public partial class TaskSettingsPageViewModel : ViewModel
     {
         var messageBox = new Wpf.Ui.Controls.MessageBox
         {
-            Title = "风险提示",
-            Content = "开启“领取奖励后扫描掉落物光柱”后，角色会在领奖完成后主动移动拾取。部分地脉花点位或特定配队下，可能因为移动范围较大而卡住。\n\n如果你愿意接受这个风险，请继续开启；否则将保持关闭。",
-            PrimaryButtonText = "接受风险并开启",
-            CloseButtonText = "不接受，保持关闭",
+            Title = "Risk Notice",
+            Content = "With 'Scan drop beams after claiming reward' enabled, the character will actively move to pick up drops after claiming rewards. On some Ley Line spots or team compositions, wider movement may cause the character to get stuck.\n\nAccept this risk to keep it enabled, or decline to keep it off.",
+            PrimaryButtonText = "Accept Risk & Enable",
+            CloseButtonText = "Decline & Keep Off",
             Owner = Application.Current.MainWindow,
             WindowStartupLocation = WindowStartupLocation.CenterOwner,
         };

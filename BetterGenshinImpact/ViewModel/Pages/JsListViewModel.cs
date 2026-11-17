@@ -147,10 +147,10 @@ public partial class JsListViewModel : ViewModel
         // 显示确认对话框
         var messageBox = new Wpf.Ui.Controls.MessageBox
         {
-            Title = "删除确认",
-            Content = $"确定要删除脚本 \"{item.Manifest.Name}\" 吗？\n\n此操作将永久删除脚本文件夹及其所有内容，无法恢复！",
-            PrimaryButtonText = "删除",
-            CloseButtonText = "取消",
+            Title = "Delete Confirmation",
+            Content = $"Are you sure you want to delete the script \"{item.Manifest.Name}\"?\n\nThis will permanently delete the script folder and all of its contents and cannot be undone!",
+            PrimaryButtonText = "Delete",
+            CloseButtonText = "Cancel",
             Owner = Application.Current.MainWindow,
             WindowStartupLocation = WindowStartupLocation.CenterOwner,
         };

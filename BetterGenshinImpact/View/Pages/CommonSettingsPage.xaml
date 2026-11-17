@@ -1511,7 +1511,13 @@
                               MinWidth="120"
                               Margin="0,0,36,0"
                               ItemsSource="{Binding CountryList}"
-                              SelectedItem="{Binding SelectedCountry}" />
+                              SelectedItem="{Binding SelectedCountry}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{i18n:TValue}" />
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
                 </Grid>
 
                 <!--  指定区域  -->
@@ -1734,7 +1740,13 @@
                               MinWidth="100"
                               Margin="0,0,36,0"
                               ItemsSource="{Binding AdventurersGuildCountry}"
-                              SelectedItem="{Binding Config.OtherConfig.AutoFetchDispatchAdventurersGuildCountry, Mode=TwoWay}" />
+                              SelectedItem="{Binding Config.OtherConfig.AutoFetchDispatchAdventurersGuildCountry, Mode=TwoWay}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{i18n:TValue}" />
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
                     <!--<ui:ToggleSwitch Grid.Row="0"
                                      Grid.RowSpan="2"
                                      Grid.Column="1"

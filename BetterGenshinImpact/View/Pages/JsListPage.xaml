@@ -111,11 +111,21 @@
                 <ListView.View>
                     <GridView ColumnHeaderContainerStyle="{StaticResource GridViewColumnHeaderDarkStyle}">
                         <GridViewColumn Width="{Binding ElementName=Col1, Path=ActualWidth}"
-                                        DisplayMemberBinding="{Binding FolderName}"
-                                        Header="{i18n:T 目录}" />
+                                        Header="{i18n:T 目录}">
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{i18n:TValue FolderName}" TextTrimming="CharacterEllipsis" />
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
                         <GridViewColumn Width="{Binding ElementName=Col2, Path=ActualWidth}"
-                                        DisplayMemberBinding="{Binding Manifest.Name}"
-                                        Header="{i18n:T 名称}" />
+                                        Header="{i18n:T 名称}">
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{i18n:TValue Manifest.Name}" TextTrimming="CharacterEllipsis" />
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
                         <GridViewColumn Width="{Binding ElementName=Col3, Path=ActualWidth}"
                                         DisplayMemberBinding="{Binding Manifest.Version}"
                                         Header="{i18n:T 版本}" />
@@ -159,7 +169,7 @@
                 </ListView.Style>
                 <ListView.ItemContainerStyle>
                     <Style BasedOn="{StaticResource ListViewItemStyle}" TargetType="ui:ListViewItem">
-                        <Setter Property="ToolTip" Value="{Binding Manifest.Description}" />
+                        <Setter Property="ToolTip" Value="{i18n:TValue Manifest.Description}" />
                         <Setter Property="ToolTipService.InitialShowDelay" Value="0" />
                         <Setter Property="ToolTipService.ShowDuration" Value="60000" />
                     </Style>

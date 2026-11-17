@@ -86,7 +86,7 @@ public partial class App : Application
                 var richTextBox = new RichTextBoxImpl();
                 services.AddSingleton<IRichTextBox>(richTextBox);
 
-                var loggerConfiguration = new LoggerConfiguration()
+                var innerLogger = new LoggerConfiguration()
                     .WriteTo.Logger(fileLoggerConfiguration => fileLoggerConfiguration
                         .Enrich.WithProperty("BgiInstance", instanceIdentity)
                         .WriteTo.File(logFile,
@@ -100,17 +100,23 @@ public partial class App : Application
                         "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}")
                     .MinimumLevel.Debug()
                     .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
-                    .MinimumLevel.Override("Microsoft.Hosting.Lifetime", LogEventLevel.Warning);
-                // 日志遮罩输出：仅当“遮罩启用且日志框可见”时才真正写入，隐藏时避免不必要的 UI 开销（#3161）。
-                // 条件改为运行时每次写入时动态判断，因此启动后通过快捷键切换 ShowLogBox 也能即时恢复日志（#3357）。
-                loggerConfiguration.WriteTo.Sink(
-                    new ConditionalLogEventSink(
-                        new LoggerConfiguration()
-                            .WriteTo.RichTextBox(richTextBox, LogEventLevel.Information,
-                                "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}")
-                            .CreateLogger(),
-                        () => all.MaskWindowConfig is { MaskEnabled: true, ShowLogBox: true }),
-                    LogEventLevel.Information);
+                    .MinimumLevel.Override("Microsoft.Hosting.Lifetime", LogEventLevel.Warning)
+                    // Overlay log sink writes only when Mask is enabled and LogBox is visible.
+                    .WriteTo.Sink(
+                        new ConditionalLogEventSink(
+                            new LoggerConfiguration()
+                                .WriteTo.RichTextBox(richTextBox, LogEventLevel.Information,
+                                    "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}")
+                                .CreateLogger(),
+                            () => all.MaskWindowConfig is { MaskEnabled: true, ShowLogBox: true }),
+                        LogEventLevel.Information)
+                    .CreateLogger();
+
+                var loggerConfiguration = new LoggerConfiguration()
+                    .MinimumLevel.Debug()
+                    .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+                    .MinimumLevel.Override("Microsoft.Hosting.Lifetime", LogEventLevel.Warning)
+                    .WriteTo.Sink(new TranslatingLogEventSink(innerLogger));
 
                 Log.Logger = loggerConfiguration.CreateLogger();
                 services.AddLogging(c => c.AddSerilog());
@@ -162,7 +168,7 @@ public partial class App : Application
 
                 // Service containing navigation, same as INavigationWindow... but without window
                 services.AddSingleton<INavigationService, NavigationService>();
-                services.AddSingleton<ISnackbarService, SnackbarService>();
+                services.AddSingleton<ISnackbarService>(_ => new TranslatingSnackbarService(new SnackbarService()));
 
                 // Main window with navigation
                 services.AddView<INavigationWindow, MainWindow, MainWindowViewModel>();
@@ -375,12 +381,13 @@ public partial class App : Application
     {
         base.OnExit(e);
 
-        ConsoleHelper.WriteLine("BetterGI 应用程序正在关闭...");
+        ConsoleHelper.WriteLine("BetterGI application is shutting down...");
 
         // 写入防抖窗口内尚未落盘的配置改动
         try
         {
             _host.Services.GetService<IConfigService>()?.Flush();
+            I18nService.Instance.DisposeAutoTranslation();
         }
         catch (Exception ex)
         {
@@ -511,7 +518,7 @@ public partial class App : Application
         // 通过日志遮罩提示用户：非致命异常已记录。
         if (!isTerminating)
         {
-            const string nonFatalMessage = "发生非致命异常，已记录日志，请查看日志详情。";
+            const string nonFatalMessage = "A non-fatal exception occurred and has been logged. Please check the log details.";
             GetLogger<App>().LogWarning(nonFatalMessage);
             return false;
         }
@@ -528,7 +535,7 @@ public partial class App : Application
         }
 
         // 确认 Dispatcher 可用后才记录"正在弹窗"，避免与实际行为不一致。
-        const string popupShownMessage = "发生致命异常，正在弹窗提示，同时已记录日志。";
+        const string popupShownMessage = "A fatal exception occurred. Showing error dialog and recording details to log.";
         GetLogger<App>().LogWarning(popupShownMessage);
 
         try
@@ -561,7 +568,7 @@ public partial class App : Application
                 // 只为"UI 是否开始执行"设置超时：UI 线程被阻塞/死锁时避免无限等待。
                 if (!startedSignal.Wait(TimeSpan.FromSeconds(3)))
                 {
-                    GetLogger<App>().LogWarning("弹窗调度超时，异常已记录，进程即将退出。");
+                    GetLogger<App>().LogWarning("Exception dialog dispatch timed out. Error details were logged and the process will exit.");
                     return false;
                 }
 

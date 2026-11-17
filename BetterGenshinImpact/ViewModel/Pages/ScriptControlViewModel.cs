@@ -9,6 +9,7 @@ using BetterGenshinImpact.GameTask.LogParse;
 using BetterGenshinImpact.GameTask.TaskProgress;
 using BetterGenshinImpact.Helpers.Ui;
 using BetterGenshinImpact.Model;
+using BetterGenshinImpact.Service.I18n;
 using BetterGenshinImpact.Service.Interface;
 using BetterGenshinImpact.View.Controls.Webview;
 using BetterGenshinImpact.View.Pages.View;
@@ -308,10 +309,10 @@ public partial class ScriptControlViewModel : ViewModel
         //PrimaryButtonText
         var uiMessageBox = new Wpf.Ui.Controls.MessageBox
         {
-            Title = "日志分析",
+            Title = "Log Analysis",
             Content = stackPanel,
-            CloseButtonText = "取消",
-            PrimaryButtonText = "确定",
+            CloseButtonText = "Cancel",
+            PrimaryButtonText = "OK",
             Owner = Application.Current.MainWindow,
             WindowStartupLocation = WindowStartupLocation.CenterOwner,
         };
@@ -322,7 +323,7 @@ public partial class ScriptControlViewModel : ViewModel
         {
             WebpageWindow cookieWin = new()
             {
-                Title = "日志分析",
+                Title = "Log Analysis",
                 Width = 800,
                 Height = 600,
                 Owner = uiMessageBox,
@@ -747,7 +748,7 @@ public partial class ScriptControlViewModel : ViewModel
         var filterTextBox = new TextBox
         {
             Margin = new Thickness(0, 0, 0, 10),
-            PlaceholderText = "输入搜索条件...",
+            PlaceholderText = "Search scripts...",
         };
         filterTextBox.TextChanged += delegate { ApplyJsScriptFilter(stackPanel, list, filterTextBox.Text, selectType); };
         stackPanel.Children.Add(filterTextBox);
@@ -787,10 +788,12 @@ public partial class ScriptControlViewModel : ViewModel
     {
         foreach (var script in scripts)
         {
-            var displayText = script.FolderName + " - " + script.Manifest.Name;
+            var rawDisplayText = script.FolderName + " - " + script.Manifest.Name;
+            var translatedDisplay = I18nService.Instance.Translate(rawDisplayText);
 
             if (!string.IsNullOrEmpty(filter) &&
-                !displayText.Contains(filter, StringComparison.OrdinalIgnoreCase) &&
+                !rawDisplayText.Contains(filter, StringComparison.OrdinalIgnoreCase) &&
+                !translatedDisplay.Contains(filter, StringComparison.OrdinalIgnoreCase) &&
                 !script.FolderName.Contains(filter, StringComparison.OrdinalIgnoreCase) &&
                 !script.Manifest.Name.Contains(filter, StringComparison.OrdinalIgnoreCase))
             {
@@ -801,7 +804,7 @@ public partial class ScriptControlViewModel : ViewModel
             {
                 var checkBox = new CheckBox
                 {
-                    Content = displayText,
+                    Content = translatedDisplay,
                     Tag = script.FolderName,
                     Margin = new Thickness(0, 2, 0, 2),
                     Name = "dynamic_" + Guid.NewGuid().ToString().Replace("-", "_")
@@ -812,7 +815,7 @@ public partial class ScriptControlViewModel : ViewModel
             {
                 var radioButton = new RadioButton
                 {
-                    Content = displayText,
+                    Content = translatedDisplay,
                     Tag = script.FolderName,
                     Margin = new Thickness(0, 2, 0, 2),
                     Name = "dynamic_" + Guid.NewGuid().ToString().Replace("-", "_"),
@@ -914,18 +917,18 @@ public partial class ScriptControlViewModel : ViewModel
         var stackPanel = new StackPanel();
         CheckBox excludeCheckBox = new()
         {
-            Content = "排除已选择过的目录",
+            Content = "Exclude already-added folders",
             VerticalAlignment = VerticalAlignment.Center,
         };
         CheckBox deepCheckBox = new()
         {
-            Content = "深度搜索",
+            Content = "Deep search",
             VerticalAlignment = VerticalAlignment.Center,
         };
         TextBox filterTextBox = new()
         {
             Margin = new Thickness(0, 0, 0, 10),
-            PlaceholderText = "输入筛选条件...",
+            PlaceholderText = "Filter routes...",
         };
 
         // 初始化防抖计时器
@@ -1028,7 +1031,7 @@ public partial class ScriptControlViewModel : ViewModel
     {
         var checkBox = new CheckBox
         {
-            Content = node.FileName,
+            Content = I18nService.Instance.Translate(node.FileName ?? string.Empty),
             Tag = node.FilePath,
             Margin = new Thickness(depth * 30, 0, 0, 0),
             Name = "dynamic_" + Guid.NewGuid().ToString().Replace("-", "_")
@@ -1222,8 +1225,10 @@ public partial class ScriptControlViewModel : ViewModel
     /// <returns>是否匹配</returns>
     private static bool IsNodeMatched(FileTreeNode<PathingTask> node, string filter)
     {
-        // 该节点名称是否匹配
-        if (node.FileName?.Contains(filter, StringComparison.OrdinalIgnoreCase) == true)
+        // Match both raw and translated display names
+        var rawFileName = node.FileName ?? string.Empty;
+        if (rawFileName.Contains(filter, StringComparison.OrdinalIgnoreCase)
+            || I18nService.Instance.Translate(rawFileName).Contains(filter, StringComparison.OrdinalIgnoreCase))
             return true;
 
         // 往前追溯，该节点路径中是否至少有一段匹配
@@ -1242,7 +1247,8 @@ public partial class ScriptControlViewModel : ViewModel
                     segmentToMatch = Path.GetFileNameWithoutExtension(segment);
                 }
 
-                if (segmentToMatch.Contains(filter, StringComparison.OrdinalIgnoreCase))
+                if (segmentToMatch.Contains(filter, StringComparison.OrdinalIgnoreCase)
+                    || I18nService.Instance.Translate(segmentToMatch).Contains(filter, StringComparison.OrdinalIgnoreCase))
                     return true;
             }
         }
@@ -1325,8 +1331,9 @@ public partial class ScriptControlViewModel : ViewModel
 
         int defaultDepth = 1;
 
-        // 特殊目录的深度扩展
-        if (parentFolderName == "地方特产")
+        // 特殊目录的深度扩展（兼容中英文目录名）
+        if (string.Equals(parentFolderName, "地方特产", StringComparison.Ordinal)
+            || string.Equals(parentFolderName, "Local Specialties", StringComparison.OrdinalIgnoreCase))
             return defaultDepth + 1;
 
         return defaultDepth;
@@ -1615,9 +1622,9 @@ public partial class ScriptControlViewModel : ViewModel
         var editor = new ScriptGroupProjectEditor(viewModel);
         var uiMessageBox = new Wpf.Ui.Controls.MessageBox
         {
-            Title = "修改通用设置",
+            Title = "Edit General Settings",
             Content = editor,
-            CloseButtonText = "关闭",
+            CloseButtonText = "Close",
             Owner = Application.Current.MainWindow,
             WindowStartupLocation = WindowStartupLocation.CenterOwner,
         };
@@ -1660,9 +1667,9 @@ public partial class ScriptControlViewModel : ViewModel
 
             var uiMessageBox = new Wpf.Ui.Controls.MessageBox
             {
-                Title = "修改JS脚本自定义设置    ",
+                Title = "Edit JS Script Custom Settings",
                 Content = ui,
-                CloseButtonText = "关闭",
+                CloseButtonText = "Close",
                 Owner = Application.Current.MainWindow,
                 WindowStartupLocation = WindowStartupLocation.CenterOwner,
             };
@@ -2011,7 +2018,7 @@ public partial class ScriptControlViewModel : ViewModel
 
         var dialogWindow = new FluentWindow
         {
-            Title = "配置组设置",
+            Title = "Configuration Group Settings",
             Content = new ScriptGroupConfigView(new ScriptGroupConfigViewModel(TaskContext.Instance().Config, SelectedScriptGroup.Config)),
             Width = 800,
             Height = 600,
@@ -2142,7 +2149,7 @@ public partial class ScriptControlViewModel : ViewModel
             var name = taskProgress.Name + "_" + taskProgress.CurrentScriptGroupName + "_";
             if (taskProgress.Loop)
             {
-                name += "循环(" + taskProgress.LoopCount + ")_";
+                name += "Loop(" + taskProgress.LoopCount + ")_";
             }
             if (taskProgress.CurrentScriptGroupProjectInfo != null)
             {
@@ -2159,7 +2166,7 @@ public partial class ScriptControlViewModel : ViewModel
         // DisplayMemberPath="Value"
         var uiMessageBox = new Wpf.Ui.Controls.MessageBox
         {
-            Title = "选择需要继续执行的进度记录",
+            Title = "Select Progress Records to Resume",
             Content = new ScrollViewer
             {
                 Content = stackPanel,
@@ -2168,8 +2175,8 @@ public partial class ScriptControlViewModel : ViewModel
                 ,
                 Width = 600
             },
-            CloseButtonText = "关闭",
-            PrimaryButtonText = "确认执行",
+            CloseButtonText = "Close",
+            PrimaryButtonText = "Confirm & Run",
             Owner = Application.Current.MainWindow,
             WindowStartupLocation = WindowStartupLocation.CenterOwner,
         };
@@ -2278,14 +2285,14 @@ public partial class ScriptControlViewModel : ViewModel
 
         var loopCheckBox = new CheckBox
         {
-            Content = "循环",
+            Content = "Loop",
         };
 
 
         // 创建全选按钮
         var selectAllCheckBox = new CheckBox
         {
-            Content = "全选",
+            Content = "Select All",
             IsThreeState = true
         };
         selectAllCheckBox.Checked += (s, e) =>
@@ -2362,15 +2369,15 @@ public partial class ScriptControlViewModel : ViewModel
 
         var uiMessageBox = new Wpf.Ui.Controls.MessageBox
         {
-            Title = "选择需要执行的配置组",
+            Title = "Select Configuration Groups to Run",
             Content = new ScrollViewer
             {
                 Content = stackPanel,
                 VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
                 Height = 300 // 设置固定高度
             },
-            CloseButtonText = "关闭",
-            PrimaryButtonText = "确认执行",
+            CloseButtonText = "Close",
+            PrimaryButtonText = "Confirm & Run",
             Owner = Application.Current.MainWindow,
             WindowStartupLocation = WindowStartupLocation.CenterOwner,
         };

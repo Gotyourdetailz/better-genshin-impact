@@ -35,7 +35,12 @@ internal static class I18nJsonSynchronizer
 
         var languageFiles = Directory
             .EnumerateFiles(i18nDirectory, "*.json", SearchOption.TopDirectoryOnly)
-            .Where(path => !Path.GetFileName(path).StartsWith("_", StringComparison.Ordinal))
+            .Where(path =>
+            {
+                var name = Path.GetFileName(path);
+                return !name.StartsWith("_", StringComparison.Ordinal)
+                       && !name.StartsWith("auto_", StringComparison.OrdinalIgnoreCase);
+            })
             .OrderBy(path => path, StringComparer.OrdinalIgnoreCase)
             .ToArray();
 

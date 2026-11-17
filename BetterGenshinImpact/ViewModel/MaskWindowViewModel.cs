@@ -1073,7 +1073,7 @@ namespace BetterGenshinImpact.ViewModel
                 return labelName;
             }
 
-            return $"点位 {point.Id}";
+            return $"Point {point.Id}";
         }
 
         [RelayCommand]

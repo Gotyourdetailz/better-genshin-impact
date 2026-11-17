@@ -71,7 +71,7 @@ internal static class ChildSessionEnvironmentFixer
             case "termsrv-dll-tampered":
                 return FixTermsrvDll(cancellationToken);
             default:
-                return new ChildSessionFixResult(false, "这个问题没有提供自动修复，请按展开后的说明手动处理。");
+                return new ChildSessionFixResult(false, "Automatic repair is not available for this issue; please follow the expanded instructions to resolve it manually.");
         }
     }
 
@@ -81,7 +81,7 @@ internal static class ChildSessionEnvironmentFixer
     private static ChildSessionFixResult FixTermServiceStopped()
     {
         return ChildSessionServiceNativeMethods.TryStart("TermService", out var error)
-            ? new ChildSessionFixResult(true, "远程桌面服务已启动。")
+            ? new ChildSessionFixResult(true, "Remote Desktop Services (TermService) started.")
             : new ChildSessionFixResult(false, error);
     }
 
@@ -97,10 +97,10 @@ internal static class ChildSessionEnvironmentFixer
 
         if (!ChildSessionServiceNativeMethods.TryStart("TermService", out var startError))
         {
-            return new ChildSessionFixResult(false, $"启动类型已改为「手动」，但{startError}");
+            return new ChildSessionFixResult(false, $"Startup type changed to Manual, but {startError}");
         }
 
-        return new ChildSessionFixResult(true, "TermService 启动类型已改为「手动」并已启动。");
+        return new ChildSessionFixResult(true, "TermService startup type changed to Manual and service started.");
     }
 
     /// <summary>
@@ -117,7 +117,7 @@ internal static class ChildSessionEnvironmentFixer
         {
             return new ChildSessionFixResult(
                 false,
-                "该设置由组策略下发，改本机注册表会被覆盖。请改用 gpedit.msc 或联系管理员。");
+                "This setting is enforced by Group Policy; editing the local registry will be overwritten. Use gpedit.msc or contact your administrator.");
         }
 
         if (!TryWriteDword(
@@ -136,13 +136,13 @@ internal static class ChildSessionEnvironmentFixer
             "fDenyTSConnections");
         if (after != 0)
         {
-            return new ChildSessionFixResult(false, "注册表写入后回读不是 0，修复未生效。");
+            return new ChildSessionFixResult(false, "Registry value read-back was not 0 after writing; repair did not take effect.");
         }
 
         var restart = RestartTermService(cancellationToken);
         return restart.Success
-            ? new ChildSessionFixResult(true, "已开启远程桌面并重启服务。如果正在使用分身，需要重新点一次「启动」。")
-            : new ChildSessionFixResult(false, $"注册表已改回 0，但{restart.Message}");
+            ? new ChildSessionFixResult(true, "Remote Desktop enabled and TermService restarted. Click Start again if you were already trying to launch Virtual Desktop.")
+            : new ChildSessionFixResult(false, $"Registry reset to 0, but {restart.Message}");
     }
 
     /// <summary>
@@ -165,13 +165,13 @@ internal static class ChildSessionEnvironmentFixer
             "DevicePasswordLessBuildVersion");
         if (after == ChildSessionEnvironmentCheck.PasswordLessHelloOnlyValue)
         {
-            return new ChildSessionFixResult(false, "注册表写入后回读仍是 2，修复未生效。");
+            return new ChildSessionFixResult(false, "Registry value read-back remained 2 after writing; repair did not take effect.");
         }
 
         return new ChildSessionFixResult(
             true,
-            "已关闭「仅允许 Windows Hello 登录」。必须注销或重启才会生效——"
-            + "凭据提供程序在登录时就已经确定，不重新登录不会刷新。");
+            "Disabled 'Only allow Windows Hello sign-in'. You must sign out or reboot for it to take effect — "
+            + "Windows credential providers are loaded at sign-in and do not refresh without signing out.");
     }
 
     /// <summary>
@@ -190,7 +190,7 @@ internal static class ChildSessionEnvironmentFixer
         {
             return new ChildSessionFixResult(
                 false,
-                "无法读取 TermService 的 Parameters 键（权限不足）。请以管理员身份运行后再试。");
+                "Unable to read TermService Parameters registry key (insufficient permissions). Please run as administrator and try again.");
         }
 
         var hijacked = entry.Exists && ChildSessionEnvironmentCheck.IsServiceDllHijacked(entry.Value);
@@ -200,7 +200,7 @@ internal static class ChildSessionEnvironmentFixer
 
         if (!hijacked && !typeBroken)
         {
-            return new ChildSessionFixResult(true, "ServiceDll 已指向原生模块且类型正确，无需修复。");
+            return new ChildSessionFixResult(true, "ServiceDll already points to the native module with the correct value type; no repair needed.");
         }
 
         var backupPath = WriteServiceDllBackup(entry);
@@ -220,7 +220,7 @@ internal static class ChildSessionEnvironmentFixer
             || string.IsNullOrWhiteSpace(after.Value)
             || ChildSessionEnvironmentCheck.IsServiceDllHijacked(after.Value))
         {
-            return new ChildSessionFixResult(false, "注册表写入后回读仍是旧值，修复未生效。");
+            return new ChildSessionFixResult(false, "Registry value read-back still shows the old value after writing; repair did not take effect.");
         }
 
         // 先断持久化再重启服务：这类工具的开机任务会在下次启动时把 DLL 写回去，
@@ -230,14 +230,14 @@ internal static class ChildSessionEnvironmentFixer
 
         if (!restart.Success)
         {
-            return new ChildSessionFixResult(false, $"ServiceDll 已还原，但{restart.Message}");
+            return new ChildSessionFixResult(false, $"ServiceDll restored, but {restart.Message}");
         }
 
-        var message = "已还原为原生 termsrv.dll 并重启远程桌面服务。"
-                      + "注意：多用户并发远程桌面的能力已随之失效。";
+        var message = "Restored native termsrv.dll and restarted Remote Desktop Services. "
+                      + "Note: concurrent multi-user Remote Desktop support is now disabled.";
         if (backupPath is not null)
         {
-            message += $"原值已备份到 {backupPath}。";
+            message += $" Original value backed up to {backupPath}.";
         }
 
         // 开机项没清干净就不算整体成功：任务还在的话，下次开机照样把补丁写回去。
@@ -253,7 +253,7 @@ internal static class ChildSessionEnvironmentFixer
         var deviations = ChildSessionEnvironmentCheck.GetServiceKeyDeviations();
         if (deviations.Count == 0)
         {
-            return new ChildSessionFixResult(true, "服务键字段都正常，无需修复。");
+            return new ChildSessionFixResult(true, "Service registry key fields look healthy; no repair needed.");
         }
 
         var backupPath = WriteServiceKeyBackup(deviations);
@@ -283,24 +283,24 @@ internal static class ChildSessionEnvironmentFixer
         {
             return new ChildSessionFixResult(
                 false,
-                $"以下字段恢复失败：{string.Join("、", failures)}。");
+                $"Failed to restore fields: {string.Join(", ", failures)}.");
         }
 
         var restart = RestartTermService(cancellationToken);
         if (!restart.Success)
         {
-            return new ChildSessionFixResult(false, $"服务键已恢复，但{restart.Message}");
+            return new ChildSessionFixResult(false, $"Service registry key restored, but {restart.Message}");
         }
 
-        var message = "TermService 服务键已恢复默认值（依赖只做了追加）。";
+        var message = "TermService registry key defaults restored (dependencies appended only).";
         if (needsReboot)
         {
-            message += "其中部分字段是通过注册表写入的，需要重启电脑后服务才会读取新配置。";
+            message += " Some fields were written via the registry and require a reboot before the service reads the new configuration.";
         }
 
         if (backupPath is not null)
         {
-            message += $"原值已备份到 {backupPath}。";
+            message += $" Original values backed up to {backupPath}.";
         }
 
         return new ChildSessionFixResult(true, message);
@@ -453,9 +453,9 @@ internal static class ChildSessionEnvironmentFixer
             return ChildSessionEnvironmentCheck.IsTaskScanIncomplete()
                 ? new ChildSessionFixResult(
                     false,
-                    "部分任务目录系统拒绝访问，扫描不完整，无法确认是否还有残留。"
-                    + "请以管理员身份重新检测后再试。")
-                : new ChildSessionFixResult(true, "没有发现需要清理的开机项。");
+                    "Access denied to some Scheduled Task folders; scan is incomplete and remaining entries could not be verified. "
+                    + "Please re-check as administrator and try again.")
+                : new ChildSessionFixResult(true, "No startup entries requiring cleanup were found.");
         }
 
         var backupDirectory = CreateToolBackupDirectory();
@@ -495,12 +495,12 @@ internal static class ChildSessionEnvironmentFixer
         {
             return new ChildSessionFixResult(
                 false,
-                $"部分开机项清理失败：{string.Join("；", failures)}");
+                $"Failed to clean up some startup entries: {string.Join("; ", failures)}");
         }
 
         return new ChildSessionFixResult(
             true,
-            $"已清理 {removedTasks} 个计划任务、{removedValues} 个自启项，备份在 {backupDirectory}。");
+            $"Removed {removedTasks} scheduled tasks and {removedValues} startup entries; backed up to {backupDirectory}.");
     }
 
     /// <summary>
@@ -522,7 +522,7 @@ internal static class ChildSessionEnvironmentFixer
         var state = ChildSessionEnvironmentCheck.VerifyTermsrvNow();
         if (state.Exists && state.Verified && state.Intact)
         {
-            return new ChildSessionFixResult(true, "termsrv.dll 与系统组件库一致，无需修复。");
+            return new ChildSessionFixResult(true, "termsrv.dll matches Windows system component store; no repair needed.");
         }
 
         if (state.Exists && !state.Verified)
@@ -530,7 +530,7 @@ internal static class ChildSessionEnvironmentFixer
             // 非提权时 sfc 必然失败。把「没验成」当成「被改过」去修会误伤系统文件。
             return new ChildSessionFixResult(
                 false,
-                "无法校验 termsrv.dll（通常是没有以管理员身份运行）。为免误改系统文件，本次未做任何修改，请提权后重试。");
+                "Unable to verify termsrv.dll (usually because BetterGI is not running as administrator). To avoid damaging system files, no changes were made; please elevate and retry.");
         }
 
         // 文件被改过，就把「把补丁写回去」的开机任务一起清掉，否则还原完重启又变回去。
@@ -592,19 +592,19 @@ internal static class ChildSessionEnvironmentFixer
             {
                 SfcLaunch.Launched => new ChildSessionFixResult(
                     false,
-                    "已在新窗口启动完整的 sfc /scannow（通常 5~15 分钟）。请不要关闭该窗口——"
-                    + "sfc 的修复被中断会转成「重启后执行」，下次开机会被强制修复。"
-                    + "窗口里出现结论后重新检测；若提示需要重启，请重启后再检测一次。"),
+                    "Started full sfc /scannow in a new window (typically takes 5-15 minutes). Do not close that window — "
+                    + "interrupting sfc repairs queues pending offline repair on reboot. "
+                    + "Re-check diagnostics after completion; if it asks to reboot, reboot and check again."),
 
                 // 上一次 /scannow 还在跑。再开一个会让两个 sfc 抢同一个文件，
                 // 而且它们都会登记 pending，重启后一起执行。
                 SfcLaunch.AlreadyRunning => new ChildSessionFixResult(
                     false,
-                    "已经有一个 sfc 正在运行，本次没有再启动。等它结束后重新检测即可。"),
+                    "Another sfc process is already running; did not launch another instance. Wait for it to finish and re-check."),
 
                 _ => new ChildSessionFixResult(
                     false,
-                    "无法自动启动 sfc /scannow，请以管理员身份打开命令行，手动执行 sfc /scannow。")
+                    "Unable to start sfc /scannow automatically. Please open an administrator Command Prompt and run 'sfc /scannow' manually.")
             };
 
         if (backupStopFailure is not null || scanfileStopError is not null)
@@ -614,10 +614,10 @@ internal static class ChildSessionEnvironmentFixer
             launchResult = launchResult with
             {
                 Message = (backupStopFailure is not null
-                              ? $"备份还原时无法停止远程桌面服务（{backupStopFailure}）。"
+                              ? $"Unable to stop TermService for backup restore ({backupStopFailure})."
                               : string.Empty)
                           + (scanfileStopError is not null
-                              ? $"就地修复时无法停止远程桌面服务（{scanfileStopError}）。"
+                              ? $"Unable to stop TermService for in-place repair ({scanfileStopError})."
                               : string.Empty)
                           + launchResult.Message
             };
@@ -662,8 +662,8 @@ internal static class ChildSessionEnvironmentFixer
             // 覆盖正在被服务使用的 DLL 要停服务；有活动会话时宁可不动。
             return new ChildSessionFixResult(
                 false,
-                "检测到还有正在运行的桌面分身会话。请先关闭分身再重试，"
-                + "否则重启服务会把里面的程序一起关掉。");
+                "Active Virtual Desktop session detected. Please close Virtual Desktop first and retry, "
+                + "otherwise restarting TermService will terminate programs running inside it.");
         }
 
         var safetyCopy = Path.Combine(
@@ -708,7 +708,7 @@ internal static class ChildSessionEnvironmentFixer
             {
                 return new ChildSessionFixResult(
                     true,
-                    $"已用 {Path.GetFileName(backupPath)} 还原 termsrv.dll（原文件备份在 {safetyCopy}）。");
+                    $"Restored termsrv.dll from {Path.GetFileName(backupPath)} (original backed up at {safetyCopy}).");
             }
 
             // 这个备份不是原版：回滚，别把系统留在更糟的状态。
@@ -727,7 +727,7 @@ internal static class ChildSessionEnvironmentFixer
                     restoreSafeToStart = false;
                     Logger.LogError(
                         rollbackException,
-                        "回滚 termsrv.dll 失败，当前文件未通过校验，远程桌面服务将保持停止状态，请运行 sfc /scannow 修复后重启电脑。");
+                        "Rollback of termsrv.dll failed and the current file failed verification. TermService will stay stopped; run 'sfc /scannow' and reboot.");
                 }
             }
 
@@ -739,8 +739,8 @@ internal static class ChildSessionEnvironmentFixer
                 // 到此为止，把「手动完整扫描 + 重启」讲清楚。
                 return new ChildSessionFixResult(
                     false,
-                    "备份还原失败，回滚也没能把原文件写回去。为避免远程桌面服务加载一份不可信的文件，"
-                    + "服务已保持停止状态。请以管理员身份运行 sfc /scannow 修复，然后重启电脑。");
+                    "Backup restore failed and rollback could not restore the original file. To keep TermService from loading an untrusted binary, "
+                    + "the service was kept stopped. Please run 'sfc /scannow' as administrator and reboot.");
             }
 
             Logger.LogWarning("备份 {Backup} 未通过 sfc 校验，已回滚。", Path.GetFileName(backupPath));
@@ -792,8 +792,8 @@ internal static class ChildSessionEnvironmentFixer
         {
             return new ChildSessionFixResult(
                 false,
-                "检测到还有正在运行的桌面分身会话。请先关闭分身再重试，"
-                + "否则重启服务会把里面的程序一起关掉。");
+                "Active Virtual Desktop session detected. Please close Virtual Desktop first and retry, "
+                + "otherwise restarting TermService will terminate programs running inside it.");
         }
 
         var stoppedDependents = new List<string>();
@@ -822,7 +822,7 @@ internal static class ChildSessionEnvironmentFixer
                 // /scannow 兜底——两个 sfc 同时改同一个文件，CBS 会互相打架。
                 return new ChildSessionFixResult(
                     false,
-                    $"{outcome.Description}，请稍后重新检测（修复可能仍在后台进行）。");
+                    $"{outcome.Description}; please re-check diagnostics shortly (repair may still be finishing in background).");
             }
 
             // 只认文件本身，不猜退出码：sfc 返回 0 既可能是「本来就一致」，
@@ -832,7 +832,7 @@ internal static class ChildSessionEnvironmentFixer
             {
                 return new ChildSessionFixResult(
                     true,
-                    $"已就地修复 termsrv.dll（{outcome.Description}），无需重启。");
+                    $"Repaired termsrv.dll in-place ({outcome.Description}); no reboot needed.");
             }
 
             Logger.LogWarning(
@@ -877,7 +877,7 @@ internal static class ChildSessionEnvironmentFixer
         // 和后台校验共用一把闸：后台 verifyfile 只要几秒，等一会儿比撞车划算。
         if (!gate.Wait(TimeSpan.FromSeconds(30)))
         {
-            return new SfcOutcome(-1, "已有 sfc 在运行，本次修复没有启动", Deferred: true);
+            return new SfcOutcome(-1, "Another sfc instance is already running; repair was not launched", Deferred: true);
         }
 
         var gateHandedOver = false;
@@ -890,7 +890,7 @@ internal static class ChildSessionEnvironmentFixer
 
             if (!File.Exists(sfc))
             {
-                return new SfcOutcome(-1, "找不到 sfc.exe");
+                return new SfcOutcome(-1, "sfc.exe not found");
             }
 
             // 不用 using：超时要把进程的所有权连同闸一起交给后台，
@@ -909,7 +909,7 @@ internal static class ChildSessionEnvironmentFixer
 
             if (process is null)
             {
-                return new SfcOutcome(-1, "sfc 启动失败");
+                return new SfcOutcome(-1, "Failed to launch sfc");
             }
 
             // 必须先挂上读再等退出：输出超过管道缓冲区时子进程会卡在写，双方一起等死。
@@ -927,7 +927,7 @@ internal static class ChildSessionEnvironmentFixer
                     HandOverGateUntilExit(started, gate);
                     gateHandedOver = true;
                     process = null;
-                    return new SfcOutcome(-1, "sfc /scanfile 超过 2 分钟仍在运行", Deferred: true);
+                    return new SfcOutcome(-1, "sfc /scanfile is still running after 2 minutes", Deferred: true);
                 }
             }
 
@@ -939,7 +939,7 @@ internal static class ChildSessionEnvironmentFixer
                                               or IOException)
         {
             Logger.LogWarning(exception, "运行 sfc /scanfile 失败。");
-            return new SfcOutcome(-1, "sfc /scanfile 运行失败");
+            return new SfcOutcome(-1, "sfc /scanfile execution failed");
         }
         finally
         {
@@ -985,28 +985,33 @@ internal static class ChildSessionEnvironmentFixer
     /// </summary>
     private static string DescribeSfcOutput(string output, int exitCode)
     {
-        if (output.Contains("未找到任何完整性违规", StringComparison.Ordinal))
+        if (output.Contains("未找到任何完整性违规", StringComparison.Ordinal)
+            || output.Contains("did not find any integrity violations", StringComparison.OrdinalIgnoreCase))
         {
-            return "校验通过，未发现损坏";
+            return "Verified; no integrity violations found";
         }
 
-        if (output.Contains("无法修复", StringComparison.Ordinal))
+        if (output.Contains("无法修复", StringComparison.Ordinal)
+            || output.Contains("unable to fix", StringComparison.OrdinalIgnoreCase))
         {
-            return "发现损坏但 sfc 无法修复";
+            return "Corruption detected but sfc was unable to fix it";
         }
 
-        if (output.Contains("成功修复", StringComparison.Ordinal))
+        if (output.Contains("成功修复", StringComparison.Ordinal)
+            || output.Contains("successfully repaired", StringComparison.OrdinalIgnoreCase))
         {
-            return "已修复损坏文件";
+            return "Corrupted files were repaired";
         }
 
         if (output.Contains("重新启动", StringComparison.Ordinal)
-            || output.Contains("重启", StringComparison.Ordinal))
+            || output.Contains("重启", StringComparison.Ordinal)
+            || output.Contains("reboot", StringComparison.OrdinalIgnoreCase)
+            || output.Contains("restart", StringComparison.OrdinalIgnoreCase))
         {
-            return "sfc 要求重启后才能完成";
+            return "sfc requires a reboot to complete repair";
         }
 
-        return $"sfc 返回 {exitCode}";
+        return $"sfc returned {exitCode}";
     }
 
     /// <summary>
@@ -1128,8 +1133,8 @@ internal static class ChildSessionEnvironmentFixer
         {
             return new ChildSessionFixResult(
                 false,
-                "检测到还有正在运行的桌面分身会话。请先关闭分身再重试，"
-                + "否则重启服务会把里面的程序一起关掉。");
+                "Active Virtual Desktop session detected. Please close Virtual Desktop first and retry, "
+                + "otherwise restarting TermService will terminate programs running inside it.");
         }
 
         // TermService 平时带着依赖在跑（UmRdpService 就依赖它）。有依赖在运行时
@@ -1143,14 +1148,14 @@ internal static class ChildSessionEnvironmentFixer
                 // 依赖没停干净是最常见的原因，这里把话说明白，别让用户对着 1051 猜。
                 return new ChildSessionFixResult(
                     false,
-                    $"{stopError}如果反复失败，重启电脑后再试一次。");
+                    $"{stopError} If this keeps failing, reboot your PC and try again.");
             }
 
             cancellationToken.ThrowIfCancellationRequested();
 
             if (!ChildSessionServiceNativeMethods.TryStart(TermServiceName, out var startError))
             {
-                return new ChildSessionFixResult(false, $"服务已停止但重新启动失败：{startError}");
+                return new ChildSessionFixResult(false, $"Service stopped, but restarting failed: {startError}");
             }
         }
         finally
@@ -1158,7 +1163,7 @@ internal static class ChildSessionEnvironmentFixer
             RestoreDependents(stoppedDependents);
         }
 
-        return new ChildSessionFixResult(true, "远程桌面服务已重启。");
+        return new ChildSessionFixResult(true, "Remote Desktop Services restarted.");
     }
 
     /// <summary>
@@ -1221,7 +1226,7 @@ internal static class ChildSessionEnvironmentFixer
             using var key = baseKey.OpenSubKey(ChildSessionEnvironmentCheck.TermServiceKeyPath, writable: true);
             if (key is null)
             {
-                error = $"无法打开注册表项 HKLM\\{ChildSessionEnvironmentCheck.TermServiceKeyPath}（权限不足或路径不存在）。";
+                error = $"Unable to open registry key HKLM\\{ChildSessionEnvironmentCheck.TermServiceKeyPath} (insufficient permissions or path missing).";
                 return false;
             }
 
@@ -1261,7 +1266,7 @@ internal static class ChildSessionEnvironmentFixer
                                               or SecurityException
                                               or IOException)
         {
-            error = $"写入注册表失败：{exception.Message}";
+            error = $"Failed to write registry value: {exception.Message}";
             return false;
         }
     }
@@ -1279,7 +1284,7 @@ internal static class ChildSessionEnvironmentFixer
             using var key = baseKey.OpenSubKey(path, writable: true);
             if (key is null)
             {
-                error = $"无法打开注册表项 HKLM\\{path}（权限不足或路径不存在）。";
+                error = $"Unable to open registry key HKLM\\{path} (insufficient permissions or path missing).";
                 return false;
             }
 
@@ -1290,7 +1295,7 @@ internal static class ChildSessionEnvironmentFixer
                                               or SecurityException
                                               or IOException)
         {
-            error = $"写入注册表失败：{exception.Message}";
+            error = $"Failed to write registry value: {exception.Message}";
             return false;
         }
     }
@@ -1316,7 +1321,7 @@ internal static class ChildSessionEnvironmentFixer
             using var key = baseKey.CreateSubKey(path, writable: true);
             if (key is null)
             {
-                error = $"无法打开注册表项 HKLM\\{path}（权限不足或路径不存在）。";
+                error = $"Unable to open registry key HKLM\\{path} (insufficient permissions or path missing).";
                 return false;
             }
 
@@ -1327,7 +1332,7 @@ internal static class ChildSessionEnvironmentFixer
                                               or SecurityException
                                               or IOException)
         {
-            error = $"写入注册表失败：{exception.Message}";
+            error = $"Failed to write registry value: {exception.Message}";
             return false;
         }
     }

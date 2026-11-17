@@ -34,19 +34,19 @@ public partial class ChildSessionWindowViewModel : ViewModel
     private Brush _connectionStatusBrush = Brushes.Red;
 
     [ObservableProperty]
-    private string _connectionStatusToolTip = "桌面分身未启动";
+    private string _connectionStatusToolTip = "Virtual Desktop has not started";
 
     [ObservableProperty]
-    private string _connectionStatusTitle = "桌面分身尚未启动";
+    private string _connectionStatusTitle = "Virtual Desktop Not Started";
 
     [ObservableProperty]
-    private string _connectionStatusDescription = "点击“启动并连接”，BetterGI 将创建独立桌面并建立 RDP 连接。";
+    private string _connectionStatusDescription = "Click \"Start & Connect\" to create an isolated desktop and connect over RDP.";
 
     [ObservableProperty]
-    private string _rdpStatusText = "RDP 未连接";
+    private string _rdpStatusText = "RDP Disconnected";
 
     [ObservableProperty]
-    private string _childSessionStatusText = "桌面分身会话未创建";
+    private string _childSessionStatusText = "Virtual Desktop session not created";
 
     [ObservableProperty]
     private bool _isRdpConnected;
@@ -124,30 +124,30 @@ public partial class ChildSessionWindowViewModel : ViewModel
 
     public bool IsDefaultResolutionSelected => true;
 
-    public string TopmostButtonToolTip => IsTopmost ? "取消置顶" : "置顶";
+    public string TopmostButtonToolTip => IsTopmost ? "Unpin" : "Always on Top";
 
     public string GameMouseModeButtonText =>
-        IsGameMouseModeEnabled ? "游戏鼠标" : "普通鼠标";
+        IsGameMouseModeEnabled ? "Game Mouse" : "Standard Mouse";
 
     public string GameMouseModeButtonToolTip => IsGameMouseModeEnabled
-        ? "桌面分身内的 BetterGI 打开时生效；当前窗口处于焦点时，鼠标将会被锁定在窗口内；按住 Alt 可临时释放鼠标。"
-        : "切换至游戏鼠标模式。桌面分身内的 BetterGI 打开时生效；当前窗口处于前台时，鼠标将会被锁定在窗口内；按住 Alt 可临时释放鼠标。";
+        ? "Active when BetterGI is open inside Virtual Desktop. Locks mouse inside this window while focused; hold Alt to release temporarily."
+        : "Switch to Game Mouse mode. Locks mouse inside this window while focused when BetterGI is running in Virtual Desktop; hold Alt to release temporarily.";
 
     public string AudioButtonToolTip => IsAudioMuted
-        ? "开启桌面分身声音，不影响主桌面的其他程序；切换时会自动重新连接 RDP"
-        : "关闭桌面分身声音，不影响主桌面的其他程序；切换时会自动重新连接 RDP";
+        ? "Unmute Virtual Desktop audio without affecting the main desktop; automatically reconnects RDP when toggled"
+        : "Mute Virtual Desktop audio without affecting the main desktop; automatically reconnects RDP when toggled";
 
-    public string WindowSizeModeMenuHeader => IsSmallWindowMode ? "还原窗口" : "小窗模式";
+    public string WindowSizeModeMenuHeader => IsSmallWindowMode ? "Restore Size" : "Compact Mode";
 
     public string WindowSizeModeMenuToolTip => IsSmallWindowMode
-        ? "将桌面分身窗口还原至默认大小"
-        : "将桌面分身窗口缩放至宽 750，并按 16:9 比例同步缩小高度";
+        ? "Restore Virtual Desktop window to its default size"
+        : "Scale Virtual Desktop window to 750px wide while maintaining 16:9 aspect ratio";
 
-    public string WatchModeMenuHeader => IsWatchModeEnabled ? "控制模式" : "观看模式";
+    public string WatchModeMenuHeader => IsWatchModeEnabled ? "Control Mode" : "View-Only Mode";
 
     public string WatchModeMenuToolTip => IsWatchModeEnabled
-        ? "退出观看模式"
-        : "桌面分身画面仅可观看，键鼠不会生效";
+        ? "Exit View-Only mode"
+        : "View Virtual Desktop screen only; mouse and keyboard input will be ignored";
 
     public double WindowResizeTargetWidth => IsSmallWindowMode
         ? SmallWindowWidth
@@ -330,10 +330,10 @@ public partial class ChildSessionWindowViewModel : ViewModel
             UpdateConnectionStatus();
 
             ShowNotification(
-                reconnectStarted ? "正在应用设置" : "设置已保存",
+                reconnectStarted ? "Applying Settings" : "Settings Saved",
                 reconnectStarted
-                    ? "RDP 正在自动重新连接，连接完成后系统组合键设置生效。"
-                    : "当前没有桌面分身会话，系统组合键设置将在下次连接时生效。",
+                    ? "RDP is automatically reconnecting; system shortcut settings will take effect once connected."
+                    : "No active Virtual Desktop session; system shortcut settings will apply on next connection.",
                 InfoBarSeverity.Informational);
         }
         catch (Exception exception)
@@ -341,7 +341,7 @@ public partial class ChildSessionWindowViewModel : ViewModel
             IsSystemShortcutsReconnectPending = false;
             SendSystemShortcutsToRemote = _childSessionService.SendSystemShortcutsToRemote;
             ShowNotification(
-                "设置切换失败",
+                "Failed to Switch Settings",
                 exception.GetBaseException().Message,
                 InfoBarSeverity.Error,
                 TimeSpan.FromSeconds(8));
@@ -366,10 +366,10 @@ public partial class ChildSessionWindowViewModel : ViewModel
 
         IsGameMouseModeEnabled = _childSessionService.IsGameMouseModeEnabled;
         ShowNotification(
-            enabled ? "游戏鼠标已开启" : "普通鼠标已开启",
+            enabled ? "Game Mouse Enabled" : "Standard Mouse Enabled",
             enabled
-                ? "桌面分身内的 BetterGI 打开时生效。当前窗口处于焦点时，鼠标将会被锁定在窗口内，按住 Alt 临时释放鼠标。"
-                : "BetterGI 不再向桌面分身转发相对鼠标信息。",
+                ? "Active when BetterGI is open inside Virtual Desktop. Locks mouse inside this window while focused; hold Alt to release temporarily."
+                : "BetterGI stopped forwarding relative mouse input to Virtual Desktop.",
             enabled ? InfoBarSeverity.Informational : InfoBarSeverity.Success);
     }
 
@@ -385,10 +385,10 @@ public partial class ChildSessionWindowViewModel : ViewModel
 
         IsWatchModeEnabled = _childSessionService.WatchModeEnabled;
         ShowNotification(
-            enabled ? "观看模式已开启" : "观看模式已关闭",
+            enabled ? "View-Only Mode Enabled" : "View-Only Mode Disabled",
             enabled
-                ? "本机键鼠不会对分身生效，但控制中心的组合键仍然生效。"
-                : "本机键鼠恢复操作桌面分身。",
+                ? "Local mouse and keyboard input will not affect Virtual Desktop, while toolbar shortcuts remain active."
+                : "Local mouse and keyboard input restored for Virtual Desktop.",
             enabled ? InfoBarSeverity.Informational : InfoBarSeverity.Success);
     }
 
@@ -403,12 +403,12 @@ public partial class ChildSessionWindowViewModel : ViewModel
             UpdateConnectionStatus();
 
             ShowNotification(
-                reconnectStarted ? "正在应用音频设置" : "音频设置已保存",
+                reconnectStarted ? "Applying Audio Settings" : "Audio Settings Saved",
                 reconnectStarted
-                    ? "RDP 正在自动重新连接，连接完成后音频设置生效。"
+                    ? "RDP is automatically reconnecting; audio settings will take effect once connected."
                     : IsAudioMuted
-                        ? "桌面分身将在下次连接时保持静音。"
-                        : "桌面分身将在下次连接时播放声音。",
+                        ? "Virtual Desktop will remain muted on next connection."
+                        : "Virtual Desktop will play audio on next connection.",
                 InfoBarSeverity.Informational);
         }
         catch (Exception exception)
@@ -416,7 +416,7 @@ public partial class ChildSessionWindowViewModel : ViewModel
             IsAudioReconnectPending = false;
             IsAudioMuted = _childSessionService.AudioMuted;
             ShowNotification(
-                "音频设置切换失败",
+                "Failed to Switch Audio Settings",
                 exception.GetBaseException().Message,
                 InfoBarSeverity.Error,
                 TimeSpan.FromSeconds(8));
@@ -446,8 +446,8 @@ public partial class ChildSessionWindowViewModel : ViewModel
     {
         var fileDialog = new OpenFileDialog
         {
-            Title = "选择要在 BetterGI 桌面分身中以管理员权限启动的程序",
-            Filter = "Windows 程序 (*.exe)|*.exe",
+            Title = "Select an application to launch as administrator in BetterGI Virtual Desktop",
+            Filter = "Windows Applications (*.exe)|*.exe",
             CheckFileExists = true,
             CheckPathExists = true,
             DereferenceLinks = true,
@@ -590,7 +590,7 @@ public partial class ChildSessionWindowViewModel : ViewModel
                 IsAudioReconnectPending = false;
                 UpdateConnectionStatus();
                 ShowNotification(
-                    "RDP 连接失败",
+                    "RDP Connection Failed",
                     e.Message,
                     InfoBarSeverity.Error,
                     TimeSpan.FromSeconds(10));
@@ -610,10 +610,10 @@ public partial class ChildSessionWindowViewModel : ViewModel
                 IsSystemShortcutsReconnectPending = false;
                 UpdateConnectionStatus();
                 ShowNotification(
-                    "设置已生效",
+                    "Settings Applied",
                     SendSystemShortcutsToRemote
-                        ? "系统组合键现在会发送到桌面分身。"
-                        : "系统组合键现在会在本机生效。",
+                        ? "System shortcuts are now sent to Virtual Desktop."
+                        : "System shortcuts now apply to the local PC.",
                     InfoBarSeverity.Success);
             }));
     }
@@ -628,10 +628,10 @@ public partial class ChildSessionWindowViewModel : ViewModel
                 IsAudioMuted = _childSessionService.AudioMuted;
                 UpdateConnectionStatus();
                 ShowNotification(
-                    IsAudioMuted ? "桌面分身已静音" : "桌面分身声音已开启",
+                    IsAudioMuted ? "Virtual Desktop Muted" : "Virtual Desktop Audio Enabled",
                     IsAudioMuted
-                        ? "仅桌面分身的声音已关闭，主桌面其他程序不受影响。"
-                        : "桌面分身的声音已恢复。",
+                        ? "Audio is muted for Virtual Desktop only; main desktop apps remain unaffected."
+                        : "Virtual Desktop audio has been restored.",
                     InfoBarSeverity.Success);
             }));
     }
@@ -675,13 +675,13 @@ public partial class ChildSessionWindowViewModel : ViewModel
         if (IsSessionClosing)
         {
             ConnectionStatusBrush = Brushes.Orange;
-            ConnectionStatusTitle = "正在关闭桌面分身";
-            ConnectionStatusDescription = "正在断开 RDP 并注销桌面分身会话，此过程可能需要一些时间。";
-            RdpStatusText = connectedState == 0 ? "RDP 已断开" : "正在断开 RDP";
+            ConnectionStatusTitle = "Closing Virtual Desktop";
+            ConnectionStatusDescription = "Disconnecting RDP and signing out of the Virtual Desktop session; this may take a moment.";
+            RdpStatusText = connectedState == 0 ? "RDP Disconnected" : "Disconnecting RDP";
             ChildSessionStatusText = childSessionId is null
-                ? "正在确认桌面分身会话已注销"
-                : $"正在注销桌面分身会话 {childSessionId.Value}";
-            ConnectionStatusToolTip = "关闭期间已暂停桌面分身操作，完成后窗口会自动隐藏。";
+                ? "Verifying Virtual Desktop session sign-out"
+                : $"Signing out Virtual Desktop session {childSessionId.Value}";
+            ConnectionStatusToolTip = "Operations are paused while closing; this window will hide automatically when complete.";
             OnPropertyChanged(nameof(HasChildSession));
             return;
         }
@@ -690,38 +690,38 @@ public partial class ChildSessionWindowViewModel : ViewModel
         {
             IsDiagnosticsSuggested = false;
             ConnectionStatusBrush = Brushes.LimeGreen;
-            ConnectionStatusTitle = "桌面分身已连接";
-            ConnectionStatusDescription = "RDP 连接正常，可以直接在桌面分身中操作。";
+            ConnectionStatusTitle = "Virtual Desktop Connected";
+            ConnectionStatusDescription = "RDP connection is healthy; you can interact directly inside Virtual Desktop.";
         }
         else if (connectedState == 2)
         {
             ConnectionStatusBrush = childSessionId is null ? Brushes.Red : Brushes.DodgerBlue;
-            ConnectionStatusTitle = "正在连接桌面分身";
-            ConnectionStatusDescription = "正在创建或恢复 RDP 连接，请稍候。";
+            ConnectionStatusTitle = "Connecting to Virtual Desktop";
+            ConnectionStatusDescription = "Creating or restoring RDP connection; please wait.";
         }
         else if (childSessionId is not null)
         {
             ConnectionStatusBrush = Brushes.DodgerBlue;
-            ConnectionStatusTitle = "桌面分身已启动，等待连接";
-            ConnectionStatusDescription = "桌面分身会话仍在运行，点击“启动并连接”可重新建立 RDP 连接。";
+            ConnectionStatusTitle = "Virtual Desktop Started, Waiting to Connect";
+            ConnectionStatusDescription = "Virtual Desktop session is still running; click \"Start & Connect\" to re-establish the RDP connection.";
         }
         else
         {
             ConnectionStatusBrush = Brushes.Red;
-            ConnectionStatusTitle = "桌面分身尚未启动";
-            ConnectionStatusDescription = "点击“启动并连接”，BetterGI 将创建独立桌面并建立 RDP 连接。";
+            ConnectionStatusTitle = "Virtual Desktop Not Started";
+            ConnectionStatusDescription = "Click \"Start & Connect\" to create an isolated desktop and connect over RDP.";
         }
 
         RdpStatusText = connectedState switch
         {
-            0 => "RDP 未连接",
-            1 => "RDP 已连接",
-            2 => "RDP 正在连接",
-            _ => $"RDP 状态未知（{connectedState}）"
+            0 => "RDP Disconnected",
+            1 => "RDP Connected",
+            2 => "RDP Connecting",
+            _ => $"Unknown RDP state ({connectedState})"
         };
         ChildSessionStatusText = childSessionId is null
-            ? "桌面分身会话未创建"
-            : $"桌面分身会话 {childSessionId.Value}";
+            ? "Virtual Desktop session not created"
+            : $"Virtual Desktop session {childSessionId.Value}";
         ConnectionStatusToolTip = _childSessionService.StatusText;
         OnPropertyChanged(nameof(HasChildSession));
     }
@@ -730,11 +730,11 @@ public partial class ChildSessionWindowViewModel : ViewModel
     {
         var actualException = exception.GetBaseException();
         var suggestion = actualException is System.ComponentModel.Win32Exception { NativeErrorCode: 5 }
-            ? "\n\n操作被系统拒绝，请确认 BetterGI 正在以管理员权限运行。"
+            ? "\n\nAccess denied by Windows. Please verify BetterGI is running as administrator."
             : string.Empty;
 
         ThemedMessageBox.Error(
             $"{actualException.Message}{suggestion}",
-            "BetterGI 桌面分身");
+            "BetterGI Virtual Desktop");
     }
 }
